@@ -1,0 +1,31 @@
+<head>
+<title>TagTime Minder</title>
+</head>
+<body>
+
+<div class="container">
+  <h1>TagTime Minder</h1>
+</div>
+
+<div class="container">
+  {{> main}}
+</div>
+
+</body>
+
+<template name="main">
+  <div class="control-group">
+    <label class="control-label" 
+           for="pings">Number of emergency pings</label>
+    <div class="controls">
+      <input name="pings" type="text" value="1" 
+             class="form-control" placeholder="integer" autofocus />
+    </div>
+  </div>
+  <p>
+  <div>Probability of finishing between {{now}} and midnight:<br/> 
+    {{probability}}</div>
+  </p>
+
+  <!-- <input type="button" value="Click Me" /> -->
+</template>
