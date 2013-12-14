@@ -36,8 +36,6 @@ h2hm = (h) ->
 # Convert hours or "H:M" to ceiling of the number of pings
 h2p = (h) ->
   if m = h.match(/:/)
-    console.log m.length
-    console.log m.index
     a = parseInt(h.substr(0, m.index))
     b = parseInt(h.substr(m.index+1))
   else
