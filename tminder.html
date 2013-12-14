@@ -6,9 +6,29 @@
 <div class="container">
   <h1>TagTime Minder</h1>
 </div>
-
+<hr/>
 <div class="container">
   {{> main}}
+</div>
+<hr/>
+<div class="container">
+<h2>Time to set aside</h2>
+<table class="table table-striped table-bordered table-condensed">
+<thead>
+  <tr><th>#EP</th><th>1% risk</th></tr>
+</thead>
+  <tr><td>1</td><td>3.5h</td></tr>
+  <tr><td>2</td><td>5h</td></tr>
+  <tr><td>3</td><td>6h</td></tr>
+  <tr><td>4</td><td>7.5h</td></tr>
+  <tr><td>5</td><td>9h</td></tr>
+  <tr><td>6</td><td>10h</td></tr>
+  <tr><td>7</td><td>11h</td></tr>
+  <tr><td>8</td><td>12h</td></tr>
+</table>
+Handy table giving the number hours you should set aside 
+for the given number of Emergency Pings if you want to have a 99% chance of
+getting all the pings.
 </div>
 
 </body>
@@ -23,9 +43,10 @@
     </div>
   </div>
   <p>
-  <div>Probability of finishing between {{now}} and midnight:<br/> 
-    {{probability}}</div>
+  <div>
+  Probability of {{prop}}:<br/> 
+  {{probability}}
+  </div>
   </p>
-
   <!-- <input type="button" value="Click Me" /> -->
 </template>
