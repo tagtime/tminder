@@ -27,6 +27,30 @@ s2hms = (s) ->
   s %= 60
   x + s+"s"
 
+# Convert number of hours to "H:M"
+h2hm = (h) ->
+  H = Math.floor(h)
+  M = (h-H)*60
+  H + ":" + (if M<10 then "0"+M else M)
+
+# Convert hours or "H:M" to ceiling of the number of pings
+h2p = (h) ->
+  if m = h.match(/:/)
+    console.log m.length
+    console.log m.index
+    a = parseInt(h.substr(0, m.index))
+    b = parseInt(h.substr(m.index+1))
+  else
+    a = parseFloat(h); b = 0
+  Math.ceil((a+b/60)/gap)
+
+# Compute time till midnight and compute probability based on epings text field
+freshen = () ->
+  t = pumpkin()
+  n = parseInt($('#epings').val())
+  Session.set("pumpkin", t)
+  Session.set("pr", GammaCDF(t/3600, n, gap))
+
 if Meteor.isClient
   Template.main.prop = -> 
     p = Session.get("pumpkin")
@@ -36,18 +60,19 @@ if Meteor.isClient
     Math.round(pr*1000000000)/10000000 + "%"
   Template.main.events {
     'keyup input': (e) ->
-      if e.type is 'keyup' #and e.which is 13
-        n = parseInt($('#pings').val())
-        t = pumpkin()
-        Session.set("pr", GammaCDF(t/3600, n, gap))
+      if e.target.name is "epings" and e.type is 'keyup' #and e.which is 13
+        freshen()
   }
-  Meteor.setInterval((-> 
-    t = pumpkin()
-    n = parseInt($('#pings').val())
-    Session.set("pumpkin", t)
-    Session.set("pr", GammaCDF(t/3600, n, gap))),
-    1*1000
-  )
+  Template.converter.events {
+    'keyup input': (e) -> 
+      if e.target.id is "pings" and e.type is 'keyup'
+        p = $('#pings').val()
+        $('#hours').val(h2hm(gap*parseFloat(p)))
+      else if e.target.id is "hours" and e.type is 'keyup'
+        h = $('#hours').val()
+        $('#pings').val(h2p(h).toString())
+  }
+  Meteor.setInterval(freshen, 1*1000)
 
 if Meteor.isServer
   Meteor.startup ->
