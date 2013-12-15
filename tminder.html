@@ -34,7 +34,54 @@
 </table>
 Handy (static) table giving the number hours you should've set aside 
 for the given number of Emergency Pings if you wanted to have a 99% chance of
-getting all the pings.
+getting that many pings.
+</div>
+<hr/>
+<div class="container">
+<h2>What's going on?</h2>
+<p>
+If you have to ask you probably don't want to know but, see, there's this 
+website called <a href="http://beeminder.com" 
+                  title="Reminders with a sting">Beeminder</a> 
+which is a 
+Quantified Self tool for the ironically hypermotivated to graph their progress 
+on things like how they spend their time and also make <i>really</i> sure they 
+actually make progress by literally agreeing to let Beeminder charge them when 
+they don't.
+It's super motivating if you're a super crazy person, 
+i.e., a lifehacking data nerd.
+</p>
+<p>
+And then there's this equally crazy tool, also by the folks beehind Beeminder, 
+called <a href="http://messymatters.com/tagtime" 
+          title="Stochastic time tracking for space cadets">TagTime</a> which
+is really &uuml;bernerds-only for now but the idea is you can randomly
+self-sample yourself to see where your time is going.
+(For many things <a href="http://rescuetime.com"
+                    title="We love these guys">RescueTime</a> 
+works beautifully and Beeminder has a nice normal-person-friendly 
+<a href="http://beeminder.com/rescuetime">RescueTime integration</a>.)
+But for the doubly nerdy you can set up TagTime to automatically update a 
+Beeminder graph and if you've done that you might find this tool useful.
+</p>
+<p>
+The idea is that since TagTime randomly samples you, you can never be sure how
+much time you're going to get credit for.
+It works out exquisitely fairly in the long run but sometimes you have a 
+<a href="http://blog.beeminder.com/glossary/#eep"
+   title="Yes, this is a link to Beeminder's glossary, 
+          because, yes, Beeminder needs a freaking glossary">beemergency</a>
+and really need to get credit for another hour or so <i>by midnight</i>.
+So that's what this tool is for.
+It does the math on that 
+(involving the CDF of a gamma distribution, as it turns out) 
+to tell you how likely you are to get pinged 
+(to use TagTime's lingo)
+enough times before midnight, if you stay focused.
+The best part is how it updates live so you can watch your chances dwindle 
+away in real time if you're staring at this page instead of doing whatever it is
+you're beeminding and tagtiming.
+</p>
 </div>
 <hr/>
 <div class="container">
@@ -68,7 +115,7 @@ Source code:
              class="form-control" placeholder="integer" />
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font size="+2">&harr;</font> 
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <label class="control-label" for "hours">hours or H:M</label>
+    <label class="control-label" for "hours">hours</label>
       <input id="hours" type="text" value="0:45"
              class="form-control" placeholder="real or int:int" />
   </div>
