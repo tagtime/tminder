@@ -7,94 +7,88 @@ splur = (n, noun, nounp='') ->
   if nounp is '' then nounp = noun+'s'
   n.toString()+' '+(if n is 1 then noun else nounp)
 
-# Number of seconds till midnight
-pumpkin = () ->
-  d = new Date()
-  now = d.getTime()
-  d.setHours(0)
-  d.setMinutes(0)
-  d.setSeconds(0)
-  (d.getTime()+86400000 - now)/1000 # /3600
-
-# Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> 1h0m0s
-s2hms = (s) ->
-  x = ""
-  h = Math.floor(s/3600)
-  if h > 0 then x += h+"h"
-  s %= 3600
-  m = Math.floor(s/60)
-  if m > 0 then x += m+"m"
-  s %= 60
-  x + s+"s"
-
-# Convert number of hours to "H:M"
-h2hm = (h) ->
-  H = Math.floor(h)
-  M = (h-H)*60
-  H + ":" + (if M<10 then "0"+M else M)
+# Show number (just rounds to like 9 places for now)
+shn = (x) -> 
+  if typeof x != 'number' then return x
+  Math.round(x*1000000000)/1000000000 + ""
 
 # Convert number of hours to ceiling of the number of pings
-h2p = (h) -> 
-  Math.ceil(h/gap)
-
-# Convert hours as a string (possible like "H:M") to a float
-parse = (h) ->
-  if m = h.match(/:/)
-    a = parseInt(h.substr(0, m.index))
-    b = parseInt(h.substr(m.index+1))
-    a+b/60
-  parseFloat(h)
+h2p = (h) -> Math.ceil(h/gap)
 
 # Do whatever macro-expansions and syntactic sugar
-evalify = (s) ->
-  s.replace(/(\d*)\:(\d+)/g, "($1+1/60*$2)") # "H:M" -> "(H+M/60)"
+prep = (s) -> s.replace(/(\d*)\:(\d+)/g, "($1+$2/60)") # "H:M" -> "(H+M/60)"
 
-# Like eval but returns -1 if string s doesn't eval to a number
-evalinator = (s) -> 
-  try
-    eval(s)
-  catch e
-    -1
+# Like eval but just return null if syntax error
+evalinator = (s) ->
+  try 
+    eval(s) 
+  catch e 
+    null
 
 # Compute time till midnight and compute probability based on heep text field
 freshen = () ->
-  h = evalinator(evalify($('#heep').val())) # number of eep hours (float)
-  
-  t = pumpkin() # seconds till midnight
-  n = h2p(h) # number of emergency pings
-  Session.set("pumpkin", t)
-  Session.set("heep", h)
-  Session.set("nep", n)
-  Session.set("pr", GammaCDF(t/3600, n, gap))
+  xeh = $('#heep').val() # contents of "hours needed" field
+  xdl = $('#dead').val() # contents of deadline field
+  eh = evalinator(prep(xeh)) # number of eep hours (float)
+  ep = h2p(eh) # number of emergency pings
+  [h, m] = parseTime(xdl)
+  td = pumpkin(h, m) # seconds till deadline
+  pr = GammaCDF(td/3600, ep, gap) # probability
+  now = new Date()
+  Session.set("eh", eh) # emergency hours
+  Session.set("ep", ep) # emergency pings
+  Session.set("h", h)   # hour of deadline
+  Session.set("m", m)   # minute of deadline
+  Session.set("td", td) # time to deadline
+  Session.set("pr", if h == -1 then "??%" else shn(pr*100)+"%") # probability
+  Session.set("now", now.toLocaleTimeString())
 
 if Meteor.isClient
-  Template.main.prop = -> 
-    p = Session.get("pumpkin")
-    h = Session.get("heep")
-    n = Session.get("nep")
-    "finishing #{splur(n, "ping")} (#{h}h's worth) between now and midnight (#{s2hms(p)})"
-  Template.main.probability = -> 
-    pr = Session.get("pr")
-    Math.round(pr*1000000000)/10000000 + "%"
+  Template.main.heep = ->
+    eh = Session.get("eh")
+    ep = Session.get("ep")
+    "#{shn(eh) ? "??"}h ⇒ #{splur(ep, "ping")}"
+
+  Template.main.dead = ->
+    h = Session.get("h")
+    m = Session.get("m")
+    td = Session.get("td")
+    timeofday = (if h == -1 and m == -1 then "??:??" else h2hm(h+m/60))
+    countdown = (if h == -1 and m == -1 then "??s"   else s2hms(td))
+    "#{timeofday} (#{countdown})"
+
+  Template.main.probability = -> Session.get("pr")
+
+  Template.main.post = -> 
+    ep = Session.get("ep")
+    d = new Date()
+    h = d.getHours()
+    m = d.getMinutes()
+    s = d.getSeconds()
+    now = Session.get("now")
+    "Probability of #{splur(ep, "ping")}
+    between now (#{now}) and deadline."
+
   Template.main.events {
     'keyup input': (e) ->
       if e.target.name is "heep" and e.type is 'keyup' #and e.which is 13
         freshen()
   }
 
-  #SCHDEL:
-  #Template.converter.events {
-  #  'keyup input': (e) -> 
-  #    if e.target.id is "pings" and e.type is 'keyup'
-  #      p = $('#pings').val()
-  #      $('#hours').val(h2hm(gap*parseFloat(p)))
-  #    else if e.target.id is "hours" and e.type is 'keyup'
-  #      h = $('#hours').val()
-  #      $('#pings').val(h2p(h).toString())
-  #}
-
   Meteor.setInterval(freshen, 1*1000)
 
 if Meteor.isServer
   Meteor.startup ->
     # code to run on server at startup
+
+
+# Old snippet for having 2 field that convert between each other...
+#Template.converter.events {
+#  'keyup input': (e) -> 
+#    if e.target.id is "pings" and e.type is 'keyup'
+#      p = $('#pings').val()
+#      $('#hours').val(h2hm(gap*parseFloat(p)))
+#    else if e.target.id is "hours" and e.type is 'keyup'
+#      h = $('#hours').val()
+#      $('#pings').val(h2p(h).toString())
+#}
