@@ -7,34 +7,31 @@
   <h1>TagTime Minder</h1>
 </div>
 <hr/>
+
 <div class="container">
   <h2>Always tell me the odds</h2>
   {{> main}}
 </div>
 <hr/>
-<div class="container">
-  <h2>Converter</h2>
-  {{> converter}}
-</div>
-<hr/>
+
 <div class="container">
 <h2>Coulda shoulda</h2>
 <table class="table table-striped table-bordered table-condensed">
 <thead>
-  <tr><th>#EP</th><th>1% risk</th></tr>
+  <tr><th>Needed</th><th>1% risk</th></tr>
 </thead>
-  <tr><td>1</td><td>3.5h</td></tr>
-  <tr><td>2</td><td>5h</td></tr>
-  <tr><td>3</td><td>6h</td></tr>
-  <tr><td>4</td><td>7.5h</td></tr>
-  <tr><td>5</td><td>9h</td></tr>
-  <tr><td>6</td><td>10h</td></tr>
-  <tr><td>7</td><td>11h</td></tr>
-  <tr><td>8</td><td>12h</td></tr>
+  <tr><td>0h45m (1 eep ping)</td><td>3.5h</td></tr>
+  <tr><td>1h30m (2 eep pings)</td><td>5h</td></tr>
+  <tr><td>2h15m (3 eep pings)</td><td>6h</td></tr>
+  <tr><td>3h00m (4 eep pings)</td><td>7.5h</td></tr>
+  <tr><td>3h45m (5 eep pings)</td><td>9h</td></tr>
+  <tr><td>4h30m (6 eep pings)</td><td>10h</td></tr>
+  <tr><td>5h15m (7 eep pings)</td><td>11h</td></tr>
+  <tr><td>6h00m (8 eep pings)</td><td>12h</td></tr>
 </table>
 Handy (static) table giving the number hours you should've set aside 
-for the given number of Emergency Pings if you wanted to have a 99% chance of
-getting that many pings.
+for the given number of Emergency Hours (Emergency Pings) 
+if you wanted to have a 99% chance of getting that many pings.
 </div>
 <hr/>
 <div class="container">
@@ -56,7 +53,7 @@ And then there's this equally crazy tool, also by the folks beehind Beeminder,
 called <a href="http://messymatters.com/tagtime" 
           title="Stochastic time tracking for space cadets">TagTime</a> which
 is really &uuml;bernerds-only for now but the idea is you can randomly
-self-sample yourself to see where your time is going.
+sample yourself to see where your time is going.
 (For many things <a href="http://rescuetime.com"
                     title="We love these guys">RescueTime</a> 
 works beautifully and Beeminder has a nice normal-person-friendly 
@@ -93,28 +90,40 @@ Source code:
 <template name="main">
   <div class="control-group">
     <label class="control-label" 
-           for="epings">Number of emergency pings</label>
+           for="heep">Hours needed (eg, 0:45*3 for 3 pings):</label>
     <div class="controls">
-      <input id="epings" type="text" value="1" 
-             class="form-control" placeholder="integer" autofocus />
+      <input id="heep" type="text" value="1" 
+             class="form-control" 
+             placeholder="arithmetic expression or HH:MM"
+             autofocus />
     </div>
+<!--
+    <label class="control-group"
+           for="dead">Deadline (24-hour time):</label>
+    <div class="controls">
+      <input id="dead" type="text" value="0:00"
+             class="form-control"
+             placeholder="time of day"/>
+    </div>
+-->
   </div>
   <p>
   <div>
-  Probability of {{prop}}: &nbsp;
-  <font size="+3">{{probability}}</font>
+  <h3>&rArr; {{probability}}</h3>
+  Probability of {{prop}}.
   </div>
   </p>
 </template>
 
+<!-- converter not used -->
 <template name="converter">
   <div class="form-inline">
-    <label class="control-label" for "pings">pings</label>
+    <label class="control-label" for="pings">pings</label>
       <input id="pings" type="text" value="1"
              class="form-control" placeholder="integer" />
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font size="+2">&harr;</font> 
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &harr;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <label class="control-label" for "hours">hours</label>
+    <label class="control-label" for="hours">hours</label>
       <input id="hours" type="text" value="0:45"
              class="form-control" placeholder="real or int:int" />
   </div>
