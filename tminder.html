@@ -96,7 +96,8 @@ Source code:
       <input id="heep" type="text" value="1" 
              class="form-control" 
              placeholder="arithmetic expression or HH:MM"
-             autofocus /> &nbsp; {{heep}}
+             autofocus 
+             onfocus="this.value = this.value;"/> &nbsp; {{heep}}
     </div>
 
     <label class="control-label"
