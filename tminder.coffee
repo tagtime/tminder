@@ -19,27 +19,28 @@ h2p = (h) -> Math.ceil(h/gap)
 prep = (s) -> s.replace(/(\d*)\:(\d+)/g, "($1+$2/60)") # "H:M" -> "(H+M/60)"
 
 # Like eval but just return null if syntax error
-evalinator = (s) ->
+laxeval = (s) ->
   try 
     eval(s) 
   catch e 
     null
 
-# Compute time till midnight and compute probability based on heep text field
+# Compute time till deadline and probability
 freshen = () ->
-  xeh = $('#heep').val() # contents of "hours needed" field
-  xdl = $('#dead').val() # contents of deadline field
-  eh = evalinator(prep(xeh)) # number of eep hours (float)
-  ep = h2p(eh) # number of emergency pings
+  xeh = $('#heep').val()  # contents of "hours needed" field
+  xdl = $('#dead').val()  # contents of deadline field
+  eh = laxeval(prep(xeh)) # number of eep hours (float)
+  ep = h2p(eh)            # number of emergency pings
   [h, m] = parseTime(xdl)
-  td = pumpkin(h, m) # seconds till deadline
+  td = pumpkin(h, m)      # seconds till deadline
   pr = GammaCDF(td/3600, ep, gap) # probability
   now = new Date()
-  Session.set("eh", eh) # emergency hours
-  Session.set("ep", ep) # emergency pings
-  Session.set("h", h)   # hour of deadline
-  Session.set("m", m)   # minute of deadline
-  Session.set("td", td) # time to deadline
+
+  Session.set("eh", eh)   # emergency hours
+  Session.set("ep", ep)   # emergency pings
+  Session.set("h", h)     # hour of deadline
+  Session.set("m", m)     # minute of deadline
+  Session.set("td", td)   # time to deadline
   Session.set("pr", if h == -1 then "??%" else shn(pr*100)+"%") # probability
   Session.set("now", now.toLocaleTimeString())
 
@@ -53,11 +54,11 @@ if Meteor.isClient
     h = Session.get("h")
     m = Session.get("m")
     td = Session.get("td")
-    timeofday = (if h == -1 and m == -1 then "??:??" else h2hm(h+m/60))
-    countdown = (if h == -1 and m == -1 then "??s"   else s2hms(td))
+    timeofday = (if h == -1 then "??:??" else h2hm(h+m/60))
+    countdown = (if h == -1 then "??s"   else s2hms(td))
     "#{timeofday} (#{countdown})"
 
-  Template.main.probability = -> Session.get("pr")
+  Template.main.prob = -> Session.get("pr")
 
   Template.main.post = -> 
     ep = Session.get("ep")
@@ -66,8 +67,7 @@ if Meteor.isClient
     m = d.getMinutes()
     s = d.getSeconds()
     now = Session.get("now")
-    "Probability of #{splur(ep, "ping")}
-    between now (#{now}) and deadline."
+    "Probability of #{splur(ep, "ping")} between now (#{now}) and deadline."
 
   Template.main.events {
     'keyup input': (e) ->
@@ -77,9 +77,7 @@ if Meteor.isClient
 
   Meteor.setInterval(freshen, 1*1000)
 
-if Meteor.isServer
-  Meteor.startup ->
-    # code to run on server at startup
+if Meteor.isServer then Meteor.startup -> # code to run on server at startup
 
 
 # Old snippet for having 2 field that convert between each other...

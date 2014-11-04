@@ -20,14 +20,14 @@
 <thead>
   <tr><th>Needed</th><th>1% risk</th></tr>
 </thead>
-  <tr><td>0h45m (1 eep ping)</td><td>3.5h</td></tr>
-  <tr><td>1h30m (2 eep pings)</td><td>5h</td></tr>
-  <tr><td>2h15m (3 eep pings)</td><td>6h</td></tr>
+  <tr><td>0h45m (1 eep ping) </td><td>3.5h</td></tr>
+  <tr><td>1h30m (2 eep pings)</td><td>5h  </td></tr>
+  <tr><td>2h15m (3 eep pings)</td><td>6h  </td></tr>
   <tr><td>3h00m (4 eep pings)</td><td>7.5h</td></tr>
-  <tr><td>3h45m (5 eep pings)</td><td>9h</td></tr>
-  <tr><td>4h30m (6 eep pings)</td><td>10h</td></tr>
-  <tr><td>5h15m (7 eep pings)</td><td>11h</td></tr>
-  <tr><td>6h00m (8 eep pings)</td><td>12h</td></tr>
+  <tr><td>3h45m (5 eep pings)</td><td>9h  </td></tr>
+  <tr><td>4h30m (6 eep pings)</td><td>10h </td></tr>
+  <tr><td>5h15m (7 eep pings)</td><td>11h </td></tr>
+  <tr><td>6h00m (8 eep pings)</td><td>12h </td></tr>
 </table>
 Handy (static) table giving the number hours you should've set aside 
 for the given number of Emergency Hours (Emergency Pings) 
@@ -89,6 +89,7 @@ Source code:
 
 <template name="main">
   <div class="control-group">
+
     <label class="control-label" 
            for="heep">Hours needed (eg, 0:45*3 for 3 pings):</label>
     <div class="controls">
@@ -97,23 +98,25 @@ Source code:
              placeholder="arithmetic expression or HH:MM"
              autofocus /> &nbsp; {{heep}}
     </div>
-    <label class="control-group"
+
+    <label class="control-label"
            for="dead">Deadline (eg, 9pm or 3:30):</label>
     <div class="controls">
       <input id="dead" type="text" value="0:00"
              class="form-control"
              placeholder="time of day"/> &nbsp; {{dead}}
     </div>
+
   </div>
   <p>
   <div>
-  <h3>&rArr; {{probability}}</h3>
+  <h3>&rArr; {{prob}}</h3>
   {{post}}
   </div>
   </p>
 </template>
 
-<!-- converter not used -->
+<!-- converter not used 
 <template name="converter">
   <div class="form-inline">
     <label class="control-label" for="pings">pings</label>
@@ -126,3 +129,4 @@ Source code:
              class="form-control" placeholder="real or int:int" />
   </div>
 </template>
+-->
