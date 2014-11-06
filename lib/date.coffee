@@ -4,17 +4,19 @@ pi = (s) -> parseInt(s, 10)
 # Idea from http://stackoverflow.com/a/14787410/4234
 @parseTime = (time) ->
   pm = time.search(/p/i) != -1      # whether it's PM
+  am = time.search(/a/i) != -1      # whether it's AM
   da = time.replace(/[^0-9]/g, '')  # digit array
   nd = da.length                    # number of digits
 
   if nd==0 or nd>4 or nd==2 and time.search(/:/) != -1 then return [-1, -1]
 
   if      nd==4       then [h,m] = [pi(da[0]+da[1]),          pi(da[2]+da[3])]
-  else if nd==3       then [h,m] = [pi(da[0]),                pi(da[2]+da[3])]
+  else if nd==3       then [h,m] = [pi(da[0]),                pi(da[1]+da[2])]
   else if nd in [1,2] then [h,m] = [pi(da[0]+(da[1] or '')),  0              ]
 
   if not (0 <= m < 60) or h > 29 then return [-1, -1]
   if pm and 0 < h < 12 then h += 12  # make sure it's 24-hour time
+  if am and h==12 then h = 0         # 12am means 0:00 (tho 12pm means 12:00)
   [h % 24, m]
 
 # Number of seconds till the given time of day (default midnight)
