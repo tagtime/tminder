@@ -31,10 +31,21 @@ freshen = () ->
   xdl = $('#dead').val()  # contents of deadline field
   eh = laxeval(prep(xeh)) # number of eep hours (float)
   ep = h2p(eh)            # number of emergency pings
-  [h, m] = parseTime(xdl)
-  td = pumpkin(h, m)      # seconds till deadline
-  pr = GammaCDF(td/3600, ep, gap) # probability
   now = new Date()
+  if xdl.search(/^\+/) != -1 # starts w/ "+" so the deadline is a relative time
+    xdl += '0'
+    xdl = xdl.replace(/h/g, '*3600+')
+    xdl = xdl.replace(/m/g, '*60+')
+    xdl = xdl.replace(/s/g, '+')
+    td = laxeval(xdl)
+    if td == null then td = 0
+    d = new Date(now.getTime() + td*1000)
+    [h, m] = [d.getHours(), d.getMinutes()]
+  else
+    [h, m] = parseTime(xdl)
+    td = pumpkin(h, m)      # seconds till deadline
+
+  pr = GammaCDF(td/3600, ep, gap) # probability
 
   Session.set("eh", eh)   # emergency hours
   Session.set("ep", ep)   # emergency pings
@@ -56,7 +67,7 @@ if Meteor.isClient
     td = Session.get("td")
     timeofday = (if h == -1 then "??:??" else h2hm(h+m/60))
     countdown = (if h == -1 then "??s"   else s2hms(td))
-    "#{timeofday} (#{countdown})"
+    "#{timeofday} (#{countdown})" # [debug #{xdl} -> #{td}]
 
   Template.main.prob = -> Session.get("pr")
 
