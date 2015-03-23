@@ -33,15 +33,21 @@ freshen = () ->
   ep = h2p(eh)            # number of emergency pings
   now = new Date()
   if xdl.search(/^\+/) != -1 # starts w/ "+" so the deadline is a relative time
+    Session.set("static", true)
+    Meteor.clearInterval(Session.get("iid"))
+    if xdl.search(/[hms]/i) == -1 then xdl += "h"
     xdl += '0'
-    xdl = xdl.replace(/h/g, '*3600+')
-    xdl = xdl.replace(/m/g, '*60+')
-    xdl = xdl.replace(/s/g, '+')
+    xdl = xdl.replace(/h/gi, '*3600+')
+    xdl = xdl.replace(/m/gi, '*60+')
+    xdl = xdl.replace(/s/gi, '+')
     td = laxeval(xdl)
     if td == null then td = 0
     d = new Date(now.getTime() + td*1000)
     [h, m] = [d.getHours(), d.getMinutes()]
   else
+    if Session.get("static")
+      Session.set("iid", Meteor.setInterval(freshen, 1000)) # milliseconds
+      Session.set("static", false)
     [h, m] = parseTime(xdl)
     td = pumpkin(h, m)      # seconds till deadline
 
@@ -67,26 +73,24 @@ if Meteor.isClient
     td = Session.get("td")
     timeofday = (if h == -1 then "??:??" else h2hm(h+m/60))
     countdown = (if h == -1 then "??s"   else s2hms(td))
-    "#{timeofday} (#{countdown})" # [debug #{xdl} -> #{td}]
+    "#{timeofday} (+#{countdown})" # [debug #{xdl} -> #{td}]
 
   Template.main.prob = -> Session.get("pr")
 
   Template.main.post = -> 
     ep = Session.get("ep")
-    d = new Date()
-    h = d.getHours()
-    m = d.getMinutes()
-    s = d.getSeconds()
-    now = Session.get("now")
-    "Probability of #{splur(ep, "ping")} between now (#{now}) and deadline."
+    if Session.get("static")
+      td = Session.get("td")
+      "Probability of #{splur(ep, "ping")} in #{s2hms(td)}."
+    else
+      now = Session.get("now")
+      "Probability of #{splur(ep, "ping")} between now (#{now}) and deadline."
 
   Template.main.events {
-    'keyup input': (e) ->
-      if e.target.name is "heep" and e.type is 'keyup' #and e.which is 13
-        freshen()
+    'keyup input': (e) -> freshen() 
   }
 
-  Meteor.setInterval(freshen, 1*1000)
+  Session.set("iid", Meteor.setInterval(freshen, 1000)) # milliseconds
 
 if Meteor.isServer then Meteor.startup -> # code to run on server at startup
 
