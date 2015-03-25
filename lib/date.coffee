@@ -19,6 +19,26 @@ pi = (s) -> parseInt(s, 10)
   if am and h==12 then h = 0         # 12am means 0:00 (tho 12pm means 12:00)
   [h % 24, m]
 
+# Like eval but just return null if syntax error
+laxeval = (s) ->
+  try 
+    eval(s) 
+  catch e 
+    null
+
+# Turn a string like "2h30m" or "2:30" into a number of hours.
+# Also accepts arithmetic expressions like :45*2 (= 1.5).
+@parseHMS = (s) ->
+  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, "($1+$2/60+$3/3600)")
+  s = s.replace(/(\d*)\:(\d+)/g, "($1+$2/60)") # "H:M" -> "(H+M/60)"
+  if s.search(/[dhms]/i) == -1 then s += "h"
+  s += '0'
+  s = s.replace(/d/gi, '*24+')
+  s = s.replace(/h/gi, '*1+')
+  s = s.replace(/m/gi, '/60+')
+  s = s.replace(/s/gi, '/3600+')
+  laxeval(s)
+
 # Number of seconds till the given time of day (default midnight)
 @pumpkin = (hour=0, minute=0) ->
   d = new Date()
@@ -29,8 +49,12 @@ pi = (s) -> parseInt(s, 10)
   x = (d.getTime() - now)/1000
   if x < 0 then x + 86400 else x
 
+isnum = (x) ->
+  x - parseFloat(x) + 1 >= 0 # apparently what jquery's isNumeric does
+
 # Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> 1h0m0s
 @s2hms = (s) ->
+  if not isnum(s) then return "NaNs"
   x = ""
   h = Math.floor(s/3600)
   s %= 3600

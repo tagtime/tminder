@@ -8,46 +8,30 @@ splur = (n, noun, nounp='') ->
   n.toString()+' '+(if n is 1 then noun else nounp)
 
 # Show number (just rounds to like 9 places for now)
-shn = (x) -> 
+shn = (x, d=9) -> 
   if typeof x != 'number' then return x
-  Math.round(x*1000000000)/1000000000 + ""
+  Math.round(x*Math.pow(10,d))/Math.pow(10,d) + ""
 
 # Convert number of hours to ceiling of the number of pings
 h2p = (h) -> Math.ceil(h/gap)
-
-# Do whatever macro-expansions and syntactic sugar
-prep = (s) -> s.replace(/(\d*)\:(\d+)/g, "($1+$2/60)") # "H:M" -> "(H+M/60)"
-
-# Like eval but just return null if syntax error
-laxeval = (s) ->
-  try 
-    eval(s) 
-  catch e 
-    null
 
 # Compute time till deadline and probability
 freshen = () ->
   xeh = $('#heep').val()  # contents of "hours needed" field
   xdl = $('#dead').val()  # contents of deadline field
-  eh = laxeval(prep(xeh)) # number of eep hours (float)
+  eh = parseHMS(xeh)      # number of eep hours (float)
   ep = h2p(eh)            # number of emergency pings
   now = new Date()
   if xdl.search(/^\+/) != -1 # starts w/ "+" so the deadline is a relative time
-    Session.set("static", true)
-    Meteor.clearInterval(Session.get("iid"))
-    if xdl.search(/[hms]/i) == -1 then xdl += "h"
-    xdl += '0'
-    xdl = xdl.replace(/h/gi, '*3600+')
-    xdl = xdl.replace(/m/gi, '*60+')
-    xdl = xdl.replace(/s/gi, '+')
-    td = laxeval(xdl)
+    Session.set("static", true); Meteor.clearInterval(Session.get("iid"))
+    td = parseHMS(xdl)*3600
     if td == null then td = 0
     d = new Date(now.getTime() + td*1000)
     [h, m] = [d.getHours(), d.getMinutes()]
   else
     if Session.get("static")
-      Session.set("iid", Meteor.setInterval(freshen, 1000)) # milliseconds
       Session.set("static", false)
+      Session.set("iid", Meteor.setInterval(freshen, 1000)) # milliseconds
     [h, m] = parseTime(xdl)
     td = pumpkin(h, m)      # seconds till deadline
 
@@ -65,7 +49,7 @@ if Meteor.isClient
   Template.main.heep = ->
     eh = Session.get("eh")
     ep = Session.get("ep")
-    "#{shn(eh) ? "??"}h ⇒ #{splur(ep, "ping")}"
+    "#{shn(eh,3) ? "??"}h ⇒ #{splur(ep, "ping")}"
 
   Template.main.dead = ->
     h = Session.get("h")
@@ -81,16 +65,22 @@ if Meteor.isClient
     ep = Session.get("ep")
     if Session.get("static")
       td = Session.get("td")
-      "Probability of #{splur(ep, "ping")} in #{s2hms(td)}."
+      return "Probability of #{splur(ep, "ping")} in #{s2hms(td)}."
     else
       now = Session.get("now")
-      "Probability of #{splur(ep, "ping")} between now (#{now}) and deadline."
+      return "Probability of #{splur(ep, "ping")} between now (#{now}) and deadline."
 
   Template.main.events {
     'keyup input': (e) -> freshen() 
   }
 
-  Session.set("iid", Meteor.setInterval(freshen, 1000)) # milliseconds
+  Session.set("static", true)      # flag saying don't keep auto-refreshing
+  Session.set("eh", 0)             # emergency hours
+  Session.set("ep", 0)             # emergency pings
+  Session.set("h", 0)              # hour of deadline
+  Session.set("m", 0)              # minute of deadline
+  Session.set("td", pumpkin(0,0))  # time to deadline
+  Session.set("pr", "100%")        # probability
 
 if Meteor.isServer then Meteor.startup -> # code to run on server at startup
 
