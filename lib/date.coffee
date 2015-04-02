@@ -60,9 +60,9 @@ isnum = (x) ->
   s %= 3600
   m = Math.floor(s/60)
   s %= 60
-  if h > 0                  then x += h+"h"
-  if m > 0 or (h>0 and s>0) then x += m+"m"
-  if s > 0                  then x += s+"s"
+  if h > 0                    then x += h+"h"
+  if m > 0 or (h>0  and s>0)  then x += m+"m"
+  if s > 0 or (h==0 and m==0) then x += s+"s"
   x
 
 # Convert number of hours to "H:M"
