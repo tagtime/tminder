@@ -9,3 +9,5 @@ insecure
 coffeescript
 bootstrap
 jquery
+standard-minifier-css
+standard-minifier-js

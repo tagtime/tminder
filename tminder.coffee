@@ -85,7 +85,7 @@ if Meteor.isClient
 if Meteor.isServer then Meteor.startup -> # code to run on server at startup
 
 
-# Old snippet for having 2 field that convert between each other...
+# Old snippet for having 2 fields that convert between each other...
 #Template.converter.events {
 #  'keyup input': (e) -> 
 #    if e.target.id is "pings" and e.type is 'keyup'
