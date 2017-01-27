@@ -5,14 +5,15 @@
 "description": "TagTime Minder",
 "main": "server.js",
 "scripts": {
-	"start": "coffee server.coffee"
+  "start": "coffee tminder.coffee"
 },
 "dependencies": {
-  "express": "^4.14.0",
-	"coffee-script": "^1.12.2",
-	"body-parser": "^1.15.2",
-	"browserify-middleware": "^7.1.0",
-	"coffeeify": "^2.1.0"
+  "babel-runtime": "^6.22.0",
+  "body-parser": "^1.15.2",
+  "browserify-middleware": "^7.1.0",
+  "coffee-script": "^1.12.2",
+  "coffeeify": "^2.1.0",
+  "express": "^4.14.0"
 },
 "engines": {
   "node": "6.9.1"
