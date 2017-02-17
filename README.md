@@ -55,3 +55,4 @@ front page of this app.
 2017.02.14 Tweaks and polish and refactoring  
 2017.02.15 Consistently treat blank fields as 0 hours and midnight, resp.  
 2017.02.16 The code is kinda elegant now and React is super nifty  
+2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)
