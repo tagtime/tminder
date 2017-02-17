@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>TagTime Minder</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.min.css"/>
+<link rel="stylesheet" type="text/css" href="style.css"/>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.22.1/babel.min.js"></script>
+<link rel="shortcut icon" type="image/x-icon" href="https://cdn.gomix.com/b28394e1-3982-4824-80b4-683cb7a23a9b%2Ftminder.jpg"/>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>TagTime Minder</h2>
+
+<!--
+<p>(Sorry, I'm hacking on this at the moment and keep breaking it. Stand by.)</p>
+-->
+
+<h3>Always tell me the odds</h3>
+
+<div id="root">Loading...</div>
+
+<hr/>
+  
+<h3>What's going on?</h3>
+<p>
+If you have to ask you probably don't want to know but, see, there's this 
+website called 
+<a href="http://beeminder.com" 
+   title="Reminders with a sting">Beeminder</a> 
+which is a Quantified Self tool for the ironically hypermotivated to graph their
+progress on things like how they spend their time and also make <i>really</i> 
+sure they actually make progress by literally agreeing to let Beeminder charge 
+them when they don't.
+It's super motivating to certain lifehacking data nerd types.
+</p>
+<p>
+And then there's this equally crazy tool, also by the folks beehind Beeminder, 
+called <a href="http://messymatters.com/tagtime" 
+          title="Stochastic time tracking for space cadets">TagTime</a> 
+which is really &uuml;bernerds-only for now but the idea is you can randomly
+sample yourself to see where your time is going.
+(For many things <a href="http://rescuetime.com"
+                    title="We love these guys">RescueTime</a> 
+works beautifully and Beeminder has a nice normal-person-friendly 
+<a href="http://beeminder.com/rescuetime"
+   title="Automatically send data from RescueTime to Beeminder -- either to ensure you spend more time on productive things like writing, or less time on unproductive things like Facebook">RescueTime integration</a>.)
+But for the doubly nerdy you can set up TagTime to automatically update a 
+Beeminder graph and if you've done that you might find this tool useful.
+</p>
+<p>
+The idea is that since TagTime randomly samples you, you can never be sure how
+much time you're going to get credit for.
+It works out exquisitely fairly in the long run but sometimes you have a 
+<a href="http://blog.beeminder.com/glossary/#eep"
+   title="Yes, this is a link to Beeminder's glossary, because, yes, Beeminder needs a freaking glossary">beemergency</a>
+and really need to get credit for another hour or so <i>by midnight</i>.
+So that's what this tool is for.
+It does the math on that 
+(involving the CDF of a gamma distribution, as it turns out) 
+to tell you how likely you are to get pinged 
+(to use TagTime's lingo)
+enough times before midnight, if you stay focused.
+The best part is how it updates live so you can watch your chances dwindle 
+away in real time if you're staring at this page instead of doing whatever it is
+you're beeminding and tagtiming.
+</p>
+<p>
+You might also find this static table handy. 
+It gives the number of hours you should set aside for the given number of 
+Emergency Hours (Emergency Pings) if you want a 99% chance of getting that many 
+pings.
+</p>
+<p>
+<table class="table table-bordered table-condensed">
+<thead>
+  <tr><th>Needed</th><th>1% risk</th></tr>
+</thead>
+  <tr><td>0h45m (1 eep ping) </td><td>3.5h</td></tr>
+  <tr><td>1h30m (2 eep pings)</td><td>5h  </td></tr>
+  <tr><td>2h15m (3 eep pings)</td><td>6h  </td></tr>
+  <tr><td>3h00m (4 eep pings)</td><td>7.5h</td></tr>
+  <tr><td>3h45m (5 eep pings)</td><td>9h  </td></tr>
+  <tr><td>4h30m (6 eep pings)</td><td>10h </td></tr>
+  <tr><td>5h15m (7 eep pings)</td><td>11h </td></tr>
+  <tr><td>6h00m (8 eep pings)</td><td>12h </td></tr>
+</table>
+</p>
+
+<br/><br/>
+
+Source code: 
+<a href="https://gomix.com/#!/project/tminder"
+   title="Latest code is here -- like guaranteed the very latest because Gomix magically redeploys it with literally every keystroke">Gomix</a>
+&
+<a href="https://github.com/dreeves/tminder"
+   title="This is still the old Meteor incarnation">GitHub</a>
+<span style="float:right;">
+Canonical URL:
+<a href="http://mind.tagti.me" 
+   title="The tagti.me domain just points to the GitHub repository">mind.tagti.me</a>
+</span>
+
+</div>
+
+<script type="text/javascript" src="pgtime.js"></script>
+<script type="text/javascript" src="themath.js"></script>
+<script type="text/babel" data-presets="react, es2015, stage-0" 
+        src="main.jsx"></script>
+
+</body>
+</html>

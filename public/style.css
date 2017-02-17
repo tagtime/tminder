@@ -1,0 +1,15 @@
+.implies:before {
+  content: '⇒ ';
+  margin-left: -50px;
+  display: block;
+  height: 1px;
+}
+.probability .implies { font-size: 3em; }
+.probability { margin-left: 50px; }
+
+#root { min-height: 13.64em; }
+
+input { 
+  max-width: 287px;
+  width: calc(100% - 148px); 
+}
