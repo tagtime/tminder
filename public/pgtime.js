@@ -147,7 +147,8 @@ function parseTOD(s=null) {
   s = s.replace(/(?:^|[^:\d])([1-9]|1[01])pm?/gi, '($1+12)h')    // "1pm"
   s = s.replace(/\b([1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m') // "1123pm"
   s = s.replace(/pm?/gi, '')                   // strip other "pm"s
-  return parseHMS(s)
+  let x = parseHMS(s)
+  return x < 0 ? x + 86400 : x // eg "12am-1h" is -3600 which is really 86400-3600
 }
 
 // Take a number of seconds after midnight, return a time-of-day string like 

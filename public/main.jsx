@@ -1,7 +1,3 @@
-// --------------------------------- 80chars ---------------------------------->
-
-function dbg(x) { console.log(x) }
-
 const GAP = 3/4  // TagTime's frequency is 3/4 hours
 
 let TID = null   // Timer ID for interval timer, for refreshing every second
