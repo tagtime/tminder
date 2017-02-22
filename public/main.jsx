@@ -27,7 +27,7 @@ function shp(p) { return isNaN(p) || p<0 || p>1 ? '??%' : shn(p*100, 9) + '%' }
 // "hours needed" field in the UI.
 function sheep(eh, ep) { // "sheep" = "show eep hours/pings"
   let digs = x => { // This is ugly and shn() should handle this stuff
-    if      (x>=1)      { return 1 } 
+    if      (x>=1)      { return 2 } 
     else if (x>17/3600) { return 2 } 
     else if (x>1/3600)  { return 3 }
     else                { return 6 }
