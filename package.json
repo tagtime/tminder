@@ -8,6 +8,7 @@
 "dependencies": { "express": "^4.14.1" },
 "engines": {"node": "6.9.1"},
 "keywords": ["gomix", "node", "react", "babel", "tagtime", "beeminder", "math"],
-"license": "MIT"
+"license": "MIT",
+"author": "Daniel Reeves <dreeves@beeminder.com>"
 
 }
