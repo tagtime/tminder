@@ -69,7 +69,7 @@ class Tminder extends React.Component {
     pr: 1,         // probability
   } }
   
-  tick = () => { // run every second to refresh probability
+  tickp = () => { // run every second to refresh probability
     this.setState({pr: pingprob(this.state.ep, pumpkin(this.state.dl))})
   }
   
@@ -86,7 +86,7 @@ class Tminder extends React.Component {
     if (td<0) { pr = pingprob(ep, pumpkin(dl)) }
     this.setState({eh, ep, pr})
     // Do the following to start auto-refresh as soon as you first edit hours:
-    if (this.state.td<0 && TID===null) { TID = setInterval(this.tick, 1000) }
+    if (this.state.td<0 && TID===null) { TID = setInterval(this.tickp, 1000) }
   }
   
   chgD = e => { // do this when the deadline field changes
@@ -99,7 +99,7 @@ class Tminder extends React.Component {
       dl = -1
       pr = pingprob(ep, td)
     } else { // a fixed deadline time so autorefresh the probability as it nears
-      if (TID===null) { TID = setInterval(this.tick, 1000) }
+      if (TID===null) { TID = setInterval(this.tickp, 1000) }
       if (/^\s*$/.test(dead)) { dead = "12am" }
       dl = parseTOD(dead)
       td = -1
@@ -107,7 +107,11 @@ class Tminder extends React.Component {
     }
     this.setState({dl, td, pr})
   }
-    
+  
+  // Even if we're not auto-refreshing the probability every second, still
+  // refresh the deadline time every minute
+  componentWillMount = () => { setInterval(()=>this.setState({}), 60000) }
+
   render() { return ( <div>
     <div className="control-group">
       <label className="control-label" for="heep">
@@ -137,4 +141,11 @@ class Tminder extends React.Component {
   </div> ) }
 }
 
+/*
+class Tinv extends React.Component {
+  render() { return ( <p>{ig(.999, 6, GAP)}</p> ) }
+}
+*/
+
 ReactDOM.render(<Tminder/>, document.getElementById('root'))
+ReactDOM.render(<Tinv/>, document.getElementById('tinv'))
