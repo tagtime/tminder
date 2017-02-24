@@ -13,3 +13,5 @@ input {
   max-width: 287px;
   width: calc(100% - 148px); 
 }
+
+.tagtimetable { max-width: 287px; }
