@@ -42,6 +42,7 @@ front page of this app.
 
 ## Changelog
 
+<pre>
 2013.12.13 dreeves writes original Meteor version at tminder.meteor.com  
 2014-2015  A bunch of commits at github.com/dreeves/tminder  
 2017.01.27 Alexander et al of ARGH! Team helped port from Meteor to Gomix  
@@ -55,5 +56,6 @@ front page of this app.
 2017.02.14 Tweaks and polish and refactoring  
 2017.02.15 Consistently treat blank fields as 0 hours and midnight, resp.  
 2017.02.16 The code is kinda elegant now and React is super nifty  
-2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)
-2017.02.24 Make deadline time auto-refresh for relative deadlines
+2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)  
+2017.02.24 Make deadline time auto-refresh for relative deadlines  
+</pre>
