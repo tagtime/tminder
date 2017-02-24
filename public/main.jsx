@@ -69,10 +69,15 @@ class Tminder extends React.Component {
     pr: 1,         // probability
   } }
   
-  tickp = () => { // run every second to refresh probability
+  tickp = () => // run every second to refresh probability (& time to deadline)
     this.setState({pr: pingprob(this.state.ep, pumpkin(this.state.dl))})
-  }
+
+  tickd = () => this.setState() // run every minute to refresh just deadline
   
+  // Even if we're not auto-refreshing the probability every second, still
+  // refresh the deadline time every minute
+  componentWillMount = () => { setInterval(this.tickd, 60000) }
+
   chgH = e => { // do this when the 'hours needed' field changes
     let heep = e.target.value // contents of the actual field
     if (/^\s*$/.test(heep)) { heep = "0h" } // blank hours needed => 0 hours
@@ -108,10 +113,6 @@ class Tminder extends React.Component {
     this.setState({dl, td, pr})
   }
   
-  // Even if we're not auto-refreshing the probability every second, still
-  // refresh the deadline time every minute
-  componentWillMount = () => { setInterval(()=>this.setState({}), 60000) }
-
   render() { return ( <div>
     <div className="control-group">
       <label className="control-label" for="heep">
