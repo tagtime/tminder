@@ -58,4 +58,5 @@ front page of this app.
 2017.02.16 The code is kinda elegant now and React is super nifty  
 2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)  
 2017.02.24 Make deadline time auto-refresh for relative deadlines  
+2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"
 </pre>
