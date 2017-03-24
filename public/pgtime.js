@@ -67,15 +67,18 @@ function laxeval(s) {
   } catch(e) { return null } 
 }
 
+// --------------------------------- 80chars ---------------------------------->
 // Turn a string like "2h30m" or "2:30" into a number of seconds.
 // Also accepts arithmetical expressions like :45*2 (= 1.5h).
 // WARNING: It does that with an eval so this is for clientside code only.
 function parseHMS(s) {
-  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, '($1+$2/60+$3/3600)')
+  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, '($1+$2/60+$3/3600)') // "H:M:S"
   s = s.replace(/(\d*)\:(\d+)/g,        '($1+$2/60)') // "H:M" -> "(H+M/60)"
-  s = s.replace(/:/, '') 
-  s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2')
-  s = s.replace(/([dhms])\s*([\d\.])/g, '$1+$2')
+  s = s.replace(/:/, '') // get rid of further colons; i forget why
+  s = s.replace(/\s/g, '') // nix whitespace eg "4h 5m" -> "4h5m"
+  s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)') // put parens around eg "4h5m"
+  s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2') // eg "1h" -> "1*h"
+  s = s.replace(/([dhms])\s*([\d\.])/g, '$1+$2') // eg "3h2m" -> "3h+2m"
   s = s.replace(/[dhms]/g, m=>({d:'24 ', h:'1 ', m:'1/60 ', s:'1/3600 '}[m]))
   var x = laxeval(s)
   return x===null ? NaN : 3600*x

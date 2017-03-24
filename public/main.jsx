@@ -149,4 +149,4 @@ class Tinv extends React.Component {
 */
 
 ReactDOM.render(<Tminder/>, document.getElementById('root'))
-ReactDOM.render(<Tinv/>, document.getElementById('tinv'))
+//ReactDOM.render(<Tinv/>, document.getElementById('tinv'))
