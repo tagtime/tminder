@@ -24,21 +24,22 @@
 // Run this in the browser's javascript console and look for failed assertions
 function testsuite() {
   function yo(tag, test) { return console.assert(test, tag) }
-  yo("3pm",           genTOD(parseTOD("3pm"))         === "3pm")
-  yo("2h30m",         genHMS(parseHMS("2h30m"))       === "2h30m")
-  yo("11:39-:48*8",   parseHMS("11:39 - :45*8")       === 20340)
-  yo("genTOD(0)",     genTOD(0)                       === "12am")
-  yo("12:01pm",       genTOD(86400/2+60)              === "12:01pm")
-  yo("genHMS(60)",    genHMS(60)                      === "1m")
-  yo("genHMS(86400)", genHMS(86400)                   === "24h")
-  yo("NaN",           genTOD(parseTOD("pm"))          === "NaN:NaNam")
-  yo("1 pm",          genTOD(parseTOD("1 pm"))        === "1pm")
-  yo("11:30pm",       genTOD(parseTOD("11:30pm"))     === "11:30pm")
-  yo("8pm-7h30m",     genTOD(parseTOD("8pm - 7h30m")) === "12:30pm")
-  yo("12am-1h",       genTOD(parseTOD("12am-1h"))     === "11pm")
-  yo("sanity",        1===1)
+  yo("3pm",             genTOD(parseTOD("3pm"))         === "3pm")
+  yo("2h30m",           genHMS(parseHMS("2h30m"))       === "2h30m")
+  yo("11:39-:48*8",     parseHMS("11:39 - :45*8")       === 20340)
+  yo("genTOD(0)",       genTOD(0)                       === "12am")
+  yo("12:01pm",         genTOD(86400/2+60)              === "12:01pm")
+  yo("genHMS(60)",      genHMS(60)                      === "1m")
+  yo("genHMS(86400)",   genHMS(86400)                   === "24h")
+  yo("NaN",             genTOD(parseTOD("pm"))          === "NaN:NaNam")
+  yo("1 pm",            genTOD(parseTOD("1 pm"))        === "1pm")
+  yo("11:30pm",         genTOD(parseTOD("11:30pm"))     === "11:30pm")
+  yo("8pm-7h30m",       genTOD(parseTOD("8pm - 7h30m")) === "12:30pm")
+  yo("12am-1h",         genTOD(parseTOD("12am-1h"))     === "11pm")
+  yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")       === 4.5*3600)
+  yo("sanity",          1===1)
 }
-// testsuite() // uncomment when testing and look in the browser console!
+//testsuite() // uncomment when testing and look in the browser console!
 
 // Turn a Date object to unixtime in seconds
 function unixtm(d=null) {
@@ -96,7 +97,6 @@ function parseHMS(s) {
   s = s.replace(/:/, '') // get rid of further colons; i forget why
   s = s.replace(/\s/g, '') // nix whitespace eg "4h 5m" -> "4h5m"
   s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)') // put parens around eg "4h5m"
-  s = s.replace(/((?:[\d\.\(\)\+\-\*\/]+[dhms])+)/g, '($1)') // eg "(11+12)h30m"
   s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2') // eg "1h" -> "1*h"
   s = s.replace(/([dhms])\s*([\d\.\(])/g, '$1+$2') // eg "3h2m" -> "3h+2m"
   s = s.replace(/[dhms]/g, m=>({d:'24 ', h:'1 ', m:'1/60 ', s:'1/3600 '}[m]))

@@ -66,4 +66,5 @@ index.html, main.jsx, pgtime.js, style.css, themath.js
 2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"  
 2017.04.12 Bugfixes: failed to parse "11:30pm" or "1 pm"
 2017.04.12 Mini test suite for parsing times of day
+2017.04.13 Bugfix of last bugfix and improved test suite
 </pre>
