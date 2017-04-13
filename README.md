@@ -40,6 +40,11 @@ That's `3*:45` hours' worth by `+(24-18:15)h` (the answer is 98%).
 This is explained in index.html, i.e., the "What's going on?" section of the 
 front page of this app.
 
+## Technical/Implementation Note
+
+This is hosted on Glitch as a Node.js app but everything is completely client-side so I think all that's needed is to serve up the 5 files in /public: 
+index.html, main.jsx, pgtime.js, style.css, themath.js
+
 ## Changelog
 
 <pre>
@@ -58,5 +63,7 @@ front page of this app.
 2017.02.16 The code is kinda elegant now and React is super nifty  
 2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)  
 2017.02.24 Make deadline time auto-refresh for relative deadlines  
-2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"
+2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"  
+2017.04.12 Bugfixes: failed to parse "11:30pm" or "1 pm"
+2017.04.12 Mini test suite for parsing times of day
 </pre>
