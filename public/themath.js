@@ -1,3 +1,4 @@
+// --------------------------------- 80chars ---------------------------------->
 // Most of these are from Numerical Recipes.
 // TagTime currently just uses GammaCDF() which gets the probability of getting
 // a given number of pings in a given amount of time.

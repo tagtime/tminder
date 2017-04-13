@@ -69,7 +69,8 @@ class Tminder extends React.Component {
     pr: 1,         // probability
   } }
   
-  tickp = () => // run every second to refresh probability (& time to deadline)
+  // run every second to refresh probability (& time to deadline)
+  tickp = () => // Glitch editor thinks there's a syntax error here but tis fine
     this.setState({pr: pingprob(this.state.ep, pumpkin(this.state.dl))})
 
   tickd = () => this.setState() // run every minute to refresh just deadline

@@ -1,3 +1,4 @@
+// --------------------------------- 80chars ---------------------------------->
 // Parse & Generate Times & Dates. Or just times for now.
 // Functions to convert back & forth between amounts of time & strings. 
 // parseTOD takes a string like "3pm" and returns a time-of-day represented
@@ -19,6 +20,26 @@
 // Examples of generating string representations of amounts of time:
 //   genHMS(60) -> "1m"
 //   genHMS(86400) -> "24h"
+
+// Run this in the browser's javascript console and look for failed assertions
+function testsuite() {
+  function yo(tag, test) { return console.assert(test, tag) }
+  yo("3pm",             genTOD(parseTOD("3pm"))         === "3pm")
+  yo("2h30m",           genHMS(parseHMS("2h30m"))       === "2h30m")
+  yo("11:39-:48*8",     parseHMS("11:39 - :45*8")       === 20340)
+  yo("genTOD(0)",       genTOD(0)                       === "12am")
+  yo("12:01pm",         genTOD(86400/2+60)              === "12:01pm")
+  yo("genHMS(60)",      genHMS(60)                      === "1m")
+  yo("genHMS(86400)",   genHMS(86400)                   === "24h")
+  yo("NaN",             genTOD(parseTOD("pm"))          === "NaN:NaNam")
+  yo("1 pm",            genTOD(parseTOD("1 pm"))        === "1pm")
+  yo("11:30pm",         genTOD(parseTOD("11:30pm"))     === "11:30pm")
+  yo("8pm-7h30m",       genTOD(parseTOD("8pm - 7h30m")) === "12:30pm")
+  yo("12am-1h",         genTOD(parseTOD("12am-1h"))     === "11pm")
+  yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")       === 4.5*3600)
+  yo("sanity",          1===1)
+}
+//testsuite() // uncomment when testing and look in the browser console!
 
 // Turn a Date object to unixtime in seconds
 function unixtm(d=null) {
@@ -67,7 +88,6 @@ function laxeval(s) {
   } catch(e) { return null } 
 }
 
-// --------------------------------- 80chars ---------------------------------->
 // Turn a string like "2h30m" or "2:30" into a number of seconds.
 // Also accepts arithmetical expressions like :45*2 (= 1.5h).
 // WARNING: It does that with an eval so this is for clientside code only.
@@ -78,7 +98,7 @@ function parseHMS(s) {
   s = s.replace(/\s/g, '') // nix whitespace eg "4h 5m" -> "4h5m"
   s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)') // put parens around eg "4h5m"
   s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2') // eg "1h" -> "1*h"
-  s = s.replace(/([dhms])\s*([\d\.])/g, '$1+$2') // eg "3h2m" -> "3h+2m"
+  s = s.replace(/([dhms])\s*([\d\.\(])/g, '$1+$2') // eg "3h2m" -> "3h+2m"
   s = s.replace(/[dhms]/g, m=>({d:'24 ', h:'1 ', m:'1/60 ', s:'1/3600 '}[m]))
   var x = laxeval(s)
   return x===null ? NaN : 3600*x
@@ -141,6 +161,7 @@ function parseTOD(s=null) {
     var d = new Date()
     return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
   }
+  s = s.replace(/\s/g, '') // nix whitespace eg "1 pm" -> "1pm"
   s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')     // 0600 -> 06:00 (military style)
   s = s.replace(/\b12am?/gi, '0')              // 12am -> 0:00
   s = s.replace(/\b12:(\d\d?)am?/gi, '$1m')    // 12:30am -> 0:30
@@ -151,7 +172,7 @@ function parseTOD(s=null) {
   s = s.replace(/\b([1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m') // "1123pm"
   s = s.replace(/pm?/gi, '')                   // strip other "pm"s
   let x = parseHMS(s)
-  return x < 0 ? x + 86400 : x // eg "12am-1h" is -3600 which is really 86400-3600
+  return x<0 ? x+86400 : x // eg "12am-1h" is -3600 which is really 86400-3600
 }
 
 // Take a number of seconds after midnight, return a time-of-day string like 
