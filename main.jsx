@@ -1,4 +1,5 @@
 const GAP = 3/4  // TagTime's frequency is 3/4 hours
+const DP = 6 // Decimal places for showing the probability
 
 let TID = null   // Timer ID for interval timer, for refreshing every second
 
@@ -21,7 +22,9 @@ function shn(x, d=6) {
 }
 
 // Show probability as a percentage
-function shp(p) { return isNaN(p) || p<0 || p>1 ? '??%' : shn(p*100, 9) + '%' }
+function shp(p) { 
+  return isNaN(p) || p<0 || p>1 ? '??%' : shn(p*100, DP) + '%' 
+}
 
 // Given eep hours and eep pings, return the string that comes after the 
 // "hours needed" field in the UI.
@@ -62,11 +65,11 @@ function shpost(ep, dl, td) { // "shpost" = "show post-probability stuff"
 // One or the other of deadline and time-to-deadline is always negative.
 class Tminder extends React.Component {
   constructor(props) { super(props); this.state = {
-    eh: 0,         // emergency hours
-    ep: 0,         // emergency pings
-    dl: 0,         // deadline time-of-day as seconds after midnight
-    td: -1,        // time to deadline in seconds (invariant: dl<0 or td<0)
-    pr: 1,         // probability
+    eh: 0,   // emergency hours
+    ep: 0,   // emergency pings
+    dl: 0,   // deadline time-of-day as seconds after midnight
+    td: -1,  // time to deadline in seconds (invariant: dl<0 or td<0)
+    pr: 1,   // probability
   } }
   
   // run every second to refresh probability (& time to deadline)

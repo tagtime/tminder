@@ -42,12 +42,10 @@ front page of this app.
 
 ## Technical/Implementation Note
 
-This is hosted on Glitch as a Node.js app but everything is completely client-side so I think all that's needed is to serve up the 5 files in /public: 
-index.html, main.jsx, pgtime.js, style.css, themath.js
+This is hosted on Glitch but it's all strictly client-side javascript.
 
 ## Changelog
 
-<pre>
 * 2013.12.13 dreeves writes original Meteor version at tminder.meteor.com  
 * 2014-2015  A bunch of commits at github.com/dreeves/tminder  
 * 2017.01.27 Alexander et al of ARGH! Team helped port from Meteor to Gomix  
@@ -68,4 +66,3 @@ index.html, main.jsx, pgtime.js, style.css, themath.js
 * 2017.04.12 Mini test suite for parsing times of day
 * 2017.04.13 Bugfix of last bugfix and improved test suite
 * 2017.06.08 Bugfix for case of more than 200 pings needed
-</pre>

@@ -2,8 +2,9 @@
 // Parse & Generate Times & Dates. Or just times for now.
 // Functions to convert back & forth between amounts of time & strings. 
 // parseTOD takes a string like "3pm" and returns a time-of-day represented
-// as the number of seconds after midnight. parseHMS takes a string like "1m"
-// or "2:30" and returns the amount of time in seconds.
+// as the number of seconds after midnight. 
+// parseHMS takes a string like "1m" or "2:30" and returns the amount of time in
+// seconds.
 // genTOD and genHMS are the inverses, generating string representations of
 // times of day and amounts of time.
 
@@ -24,6 +25,7 @@
 // Run this in the browser's javascript console and look for failed assertions
 function testsuite() {
   function yo(tag, test) { return console.assert(test, tag) }
+  console.log("Assertions! If nothing appears in the console between here --")
   yo("3pm",             genTOD(parseTOD("3pm"))         === "3pm")
   yo("2h30m",           genHMS(parseHMS("2h30m"))       === "2h30m")
   yo("11:39-:48*8",     parseHMS("11:39 - :45*8")       === 20340)
@@ -38,8 +40,9 @@ function testsuite() {
   yo("12am-1h",         genTOD(parseTOD("12am-1h"))     === "11pm")
   yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")       === 4.5*3600)
   yo("sanity",          1===1)
+  console.log("-- and here then we're good.")
 }
-//testsuite() // uncomment when testing and look in the browser console!
+// testsuite() // uncomment when testing and look in the browser console!
 
 // Turn a Date object to unixtime in seconds
 function unixtm(d=null) {

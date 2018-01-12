@@ -3,21 +3,26 @@
 // TagTime currently just uses GammaCDF() which gets the probability of getting
 // a given number of pings in a given amount of time.
 
+const log  = Math.log // Keep
+const exp  = Math.exp // Mathematics
+const abs  = Math.abs // Beautiful
+const sqrt = Math.sqrt
+
 function LogGamma(Z) {
   var S = 1 + 76.18009173    / Z     - 86.50532033   / (Z+1) +
               24.01409822    / (Z+2) - 1.231739516   / (Z+3) +
                0.00120858003 / (Z+4) - 0.00000536382 / (Z+5)
-  return (Z-.5)*Math.log(Z+4.5)-(Z+4.5)+Math.log(S*2.50662827465)
+  return (Z-.5)*log(Z+4.5)-(Z+4.5)+log(S*2.50662827465)
 }
 
 // Continued fraction representation for approximating GammaCDF
 function Gcf(X,A) { // Good for X > A+1
   var A0 = 0; var B0 = 1
   var A1 = 1; var B1 = X
-  var AOLD = 0
+  var Aold = 0
   var N = 0
-  while (Math.abs((A1-AOLD)/A1) > .00001) {
-    AOLD = A1
+  while (abs((A1-Aold)/A1) > .00001) {
+    Aold = A1
     N += 1
     A0 = A1+(N-A)*A0
     B0 = B1+(N-A)*B0
@@ -28,45 +33,45 @@ function Gcf(X,A) { // Good for X > A+1
     A1 = A1/B1
     B1 = 1
   }
-  return 1 - Math.exp(A*Math.log(X)-X-LogGamma(A))*A1
+  return 1 - exp(A*log(X)-X-LogGamma(A))*A1
 }
 
 // Series representation for approximating GammaCDF
 function Gser(X,A) { // Good for X < A+1
   var G  = 1/A
   var T9 = 1/A
-  var I = 1
+  var I  = 1
   while (T9 > G*.00001) {
     T9 *= X/(A+I)
     G  += T9
     I  += 1
   }
-  return G*Math.exp(A*Math.log(X)-X-LogGamma(A))
+  return G*exp(A*log(X)-X-LogGamma(A))
 }
 
 // Standard erf function, from http://stackoverflow.com/questions/14846767
 function erf(x) {
   var sign = (x >= 0 ? 1 : -1)
-  x = Math.abs(x)
+  x = abs(x)
   var a1 =  0.254829592
   var a2 = -0.284496736
   var a3 =  1.421413741
   var a4 = -1.453152027
   var a5 =  1.061405429
   var p  =  0.3275911
-  var t = 1/(1 + p*x)
-  var y = 1 - (((((a5*t + a4) * t) + a3) * t + a2) * t + a1) * t*Math.exp(-x*x)
+  var t  = 1/(1 + p*x)
+  var y  = 1 - (((((a5*t + a4) * t) + a3) * t + a2) * t + a1) * t*exp(-x*x)
   return sign*y // erf(-x) = -erf(x)
 }
 
 function NormalCDF(x, mean = 0, variance = 1) {
-  return 0.5 * (1 + erf((x - mean) / (Math.sqrt(2*variance))))
+  return 0.5 * (1 + erf((x - mean) / (sqrt(2*variance))))
 }
 
 // Found this one somewhere ("HASTINGS. MAX ERROR = .000001") Not currently used
 function NormalCDF2(X) {
-  var T = 1/(1+.2316419*Math.abs(X))
-  var D = .3989423*Math.exp(-X*X/2)
+  var T = 1/(1+.2316419*abs(X))
+  var D = .3989423*exp(-X*X/2)
   var P = D*T*(.3193815+T*(-.3565638+T*(1.781478+T*(-1.821256+T*1.330274))))
   return (X > 0 ? 1-P : P)
 }
@@ -76,10 +81,10 @@ function GammaCDF0(x, a) {
   if (a <= 0) { return 1 }
   if (x <= 0) { return 0 }
   if (a > 200) {
-    var z = (x-a)/Math.sqrt(a)
+    var z = (x-a)/sqrt(a)
     var y = NormalCDF(z)
-    var b1 = 2/Math.sqrt(a)
-    var phiz = .39894228*Math.exp(-z*z/2)
+    var b1 = 2/sqrt(a)
+    var phiz = .39894228*exp(-z*z/2)
     var w = y-b1*(z*z-1)*phiz/6  // Edgeworth1
     var b2 = 6/a
     var u = 3*b2*(z*z-3)+b1*b1*(z^4-10*z*z+15)
@@ -98,7 +103,7 @@ function ig(p, A, B, min=0, max=8) {
   if (p<0) { p = 0 }
   if (p>1) { p = 1 }
   var m = (min+max)/2
-  if (Math.abs(min-max)<1/60) { return m } // accurate to within 1 minute
+  if (abs(min-max)<1/60) { return m } // accurate to within 1 minute
   var p2 = GammaCDF(max, A, B)
   //console.log(`${min} ${max} -> ${GammaCDF(min, A, B)} ${p2}`)
   if (p2 < p) { return ig(p, A, B, min, 2*max) }
@@ -152,7 +157,7 @@ function invincompletegammac(a, y0) {
   yh = 1
   dithresh = 5*EPS
   d = 1/(9*a)
-  y = 1-d-normaldistr.invnormaldistribution(y0)*Math.sqrt(d) // TODO
+  y = 1-d-normaldistr.invnormaldistribution(y0)*sqrt(d) // TODO
   x = a*y*y*y
   lgm = LogGamma(a)
   i = 0
@@ -162,11 +167,11 @@ function invincompletegammac(a, y0) {
     if (y<yl || y>yh) { d = 0.0625; break }
     if (y<y0) { x0 = x; yl = y }
     else      { x1 = x; yh = y }
-    d = (a-1)*Math.log(x)-x-lgm
+    d = (a-1)*log(x)-x-lgm
     if (d<-709.78271289338399) { d = 0.0625; break }
-    d = -Math.exp(d)
+    d = -exp(d)
     d = (y-y0)/d
-    if (Math.abs(d/x)<EPS) { return x }
+    if (abs(d/x)<EPS) { return x }
     x = x-d
     i = i+1
   }
@@ -190,9 +195,9 @@ function invincompletegammac(a, y0) {
     x = x1+d*(x0-x1)
     y = incompletegammac(a, x) // TODO
     lgm = (x0-x1)/(x1+x0)
-    if (Math.abs(lgm)<dithresh) { break }
+    if (abs(lgm)<dithresh) { break }
     lgm = (y-y0)/y0
-    if (Math.abs(lgm)<dithresh) { break }
+    if (abs(lgm)<dithresh) { break }
     if (x<=0.0) { break }
     if (y>=y0) {
       x1 = x
