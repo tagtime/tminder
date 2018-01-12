@@ -1,6 +1,6 @@
 # TagTime Minder
 
-Canonical URL: mind.tagti.me -> tminder.glitch.me
+Canonical URL: mind.tagti.me currently pointing to tminder.glitch.me
 
 TagTime Minder, or Tminder, is a utility that tells you the probability that 
 you'll get your requisite number of emergency TagTime pings by your Beeminder 
@@ -66,3 +66,5 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2017.04.12 Mini test suite for parsing times of day
 * 2017.04.13 Bugfix of last bugfix and improved test suite
 * 2017.06.08 Bugfix for case of more than 200 pings needed
+* 2018.01.11 Stripped out the Node.js parts; pure clientside now
+* 2018.01.11 Added 95% and 98% confidence intervals to the table
