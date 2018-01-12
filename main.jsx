@@ -5,7 +5,15 @@ let TID = null   // Timer ID for interval timer, for refreshing every second
 
 // Given number of emergency pings and time to deadline in seconds, return
 // the probability of getting at least that many pings in that much time
-function pingprob(ep, td) { return GammaCDF(td/3600, ep, GAP) }
+function pingprob(ep, td) { 
+  return GammaCDF(td/3600, ep, GAP) 
+}
+
+// Inverse of pingprob: given number of emergency pings, ep, and a probability,
+// pr, return the amount of time, td, such that pingprob(ep, td) == pr
+function invpp(ep, pr) {
+  return ig(pr, ep, GAP)
+}
 
 // Singular or Plural: Pluralize the given noun properly, if n is not 1. 
 // Provide the plural version if irregular.
@@ -57,6 +65,17 @@ function shpost(ep, dl, td) { // "shpost" = "show post-probability stuff"
                 `${pre} between now (${genTOD(null, true, true)}) and deadline`
 }
 
+// Given the number of eep pings and a probability, return the string that comes
+// last in the UI that shows the confidence interval
+function shci(ep, pr) { // "shci" = "show confidence interval"
+  let p = pr - (1-pr) // eg, if cdf(x)=.9 then x is the top of a .8 CI
+  p = Math.max(0, p)
+  const low = 3600 * invpp(ep, (1-p)/2)
+  const hi  = 3600 * invpp(ep, 1-(1-p)/2)
+  return `${shn(p*100, 1)}% CI for ${ep} pings: ${shead(-1, low)} –` +
+                                              ` ${shead(-1, hi)}`
+}
+
 // The state has eep hours, eep pings, deadline, time to deadline, and 
 // probability. If deadline is positive then it's a fixed time-of-day and we
 // auto-refresh the probability as the deadline approaches. If deadline is 
@@ -70,6 +89,8 @@ class Tminder extends React.Component {
     dl: 0,   // deadline time-of-day as seconds after midnight
     td: -1,  // time to deadline in seconds (invariant: dl<0 or td<0)
     pr: 1,   // probability
+    a: 0,
+    b: 0,
   } }
   
   // run every second to refresh probability (& time to deadline)
@@ -142,6 +163,9 @@ class Tminder extends React.Component {
     <div className="probability">
       <p className="implies">{shp(this.state.pr)}</p>
       <p>{shpost(this.state.ep, this.state.dl, this.state.td)}</p>
+    </div>
+    <div className="ci">
+      <p>{shci(this.state.ep, this.state.pr)}</p>
     </div>
   </div> ) }
 }
