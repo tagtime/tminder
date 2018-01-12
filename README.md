@@ -1,6 +1,6 @@
 # TagTime Minder
 
-Canonical URL: mind.tagti.me
+Canonical URL: mind.tagti.me -> tminder.glitch.me
 
 TagTime Minder, or Tminder, is a utility that tells you the probability that 
 you'll get your requisite number of emergency TagTime pings by your Beeminder 
@@ -48,25 +48,24 @@ index.html, main.jsx, pgtime.js, style.css, themath.js
 ## Changelog
 
 <pre>
-2013.12.13 dreeves writes original Meteor version at tminder.meteor.com  
-2014-2015  A bunch of commits at github.com/dreeves/tminder  
-2017.01.27 Alexander et al of ARGH! Team helped port from Meteor to Gomix  
-2017.01.31 dreeves ported from coffeescript to javascript  
-2017.01.31 Bethany Soule added css to make the layout nicer  
-2017.02.01 Fedor of ARGH! Team made it mobile-friendly  
-2017.02.06 dreeves refactors like mad trying to understand React  
-2017.02.07 Accepts arithmetical expressions for time-of-day  
-2017.02.10 Bugfixes and tweaks  
-2017.02.13 More robust parsing  
-2017.02.14 Tweaks and polish and refactoring  
-2017.02.15 Consistently treat blank fields as 0 hours and midnight, resp.  
-2017.02.16 The code is kinda elegant now and React is super nifty  
-2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)  
-2017.02.24 Make deadline time auto-refresh for relative deadlines  
-2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"  
-2017.04.12 Bugfixes: failed to parse "11:30pm" or "1 pm"
-2017.04.12 Mini test suite for parsing times of day
-2017.04.13 Bugfix of last bugfix and improved test suite
+* 2013.12.13 dreeves writes original Meteor version at tminder.meteor.com  
+* 2014-2015  A bunch of commits at github.com/dreeves/tminder  
+* 2017.01.27 Alexander et al of ARGH! Team helped port from Meteor to Gomix  
+* 2017.01.31 dreeves ported from coffeescript to javascript  
+* 2017.01.31 Bethany Soule added css to make the layout nicer  
+* 2017.02.01 Fedor of ARGH! Team made it mobile-friendly  
+* 2017.02.06 dreeves refactors like mad trying to understand React  
+* 2017.02.07 Accepts arithmetical expressions for time-of-day  
+* 2017.02.10 Bugfixes and tweaks  
+* 2017.02.13 More robust parsing  
+* 2017.02.14 Tweaks and polish and refactoring  
+* 2017.02.15 Consistently treat blank fields as 0 hours and midnight, resp.  
+* 2017.02.16 The code is kinda elegant now and React is super nifty  
+* 2017.02.17 Fixed bug w/ parsing "12am-1h" (yielded negative time not 11pm)  
+* 2017.02.24 Make deadline time auto-refresh for relative deadlines  
+* 2017.03.23 Bugfix: parsed eg "8pm - 7h30m" as "8pm - 7h + 30m"  
+* 2017.04.12 Bugfixes: failed to parse "11:30pm" or "1 pm"
+* 2017.04.12 Mini test suite for parsing times of day
+* 2017.04.13 Bugfix of last bugfix and improved test suite
+* 2017.06.08 Bugfix for case of more than 200 pings needed
 </pre>
-
-[test2153]

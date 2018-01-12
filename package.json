@@ -1,24 +1,26 @@
 {
-
-"name": "tminder",
-"version": "1.2.3",
-"description": "TagTime Minder",
-"repository": "tminder.glitch",
-"scripts": { "start": "node server.js" },
-"dependencies": {
-	"express": "^4.15.2"
-},
-"engines": { "node": "6" },
-"keywords": [
-	"glitch",
-	"node",
-	"react",
-	"babel",
-	"tagtime",
-	"beeminder",
-	"math"
-],
-"license": "MIT",
-"author": "Daniel Reeves <dreeves@beeminder.com>"
-
+  "name": "tminder",
+  "version": "1.2.3",
+  "description": "TagTime Minder",
+  "repository": "tminder.glitch",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.2"
+  },
+  "engines": {
+    "node": "6.x"
+  },
+  "keywords": [
+    "glitch",
+    "node",
+    "react",
+    "babel",
+    "tagtime",
+    "beeminder",
+    "math"
+  ],
+  "license": "MIT",
+  "author": "Daniel Reeves <dreeves@beeminder.com>"
 }
