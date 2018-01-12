@@ -59,7 +59,7 @@ function erf(x) {
   return sign*y // erf(-x) = -erf(x)
 }
 
-function NormalCDF(x, mean, variance) {
+function NormalCDF(x, mean = 0, variance = 1) {
   return 0.5 * (1 + erf((x - mean) / (Math.sqrt(2*variance))))
 }
 
