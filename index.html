@@ -86,22 +86,28 @@ you're beeminding and tagtiming.
 <p>
 You might also find this static table handy. 
 It gives the number of hours you should set aside for the given number of 
-Emergency Hours (Emergency Pings) if you want a 99% chance of getting that many 
-pings.
+Emergency Hours (Emergency Pings) if you want to be pretty sure of getting at 
+least that many pings.
+Specifically it shows the ~95% and ~98% confidence intervals.
+Which means there's a 2.5% or 1% chance of it taking more than the upper bound 
+of the interval, respectively, and also a 2.5% or 1% chance of it taking less 
+than the lower bound.
+For example, if you need 2 pings you can be 99% sure they'll happen within 5 
+hours.
 </p>
 <p>
 <table class="table table-bordered table-condensed tagtimetable">
 <thead>
-  <tr><th>Needed</th><th>1% risk</th></tr>
+<tr><th>Pings Needed</th><th>~95% CI</th><th>~98% CI</th></tr>
 </thead>
-  <tr><td>0h45m (1 eep ping) </td><td>3.5h</td></tr>
-  <tr><td>1h30m (2 eep pings)</td><td>5h  </td></tr>
-  <tr><td>2h15m (3 eep pings)</td><td>6h  </td></tr>
-  <tr><td>3h00m (4 eep pings)</td><td>7.5h</td></tr>
-  <tr><td>3h45m (5 eep pings)</td><td>9h  </td></tr>
-  <tr><td>4h30m (6 eep pings)</td><td>10h </td></tr>
-  <tr><td>5h15m (7 eep pings)</td><td>11h </td></tr>
-  <tr><td>6h00m (8 eep pings)</td><td>12h </td></tr>
+<tr><td>0h45m (1p)</td><td>1m   &ndash; 3h  </td><td>30s  &ndash; 3.5h</td></tr>
+<tr><td>1h30m (2p)</td><td>10m  &ndash; 4h  </td><td>7m   &ndash; 5h  </td></tr>
+<tr><td>2h15m (3p)</td><td>30m  &ndash; 5.5h</td><td>20m  &ndash; 6h  </td></tr>
+<tr><td>3h00m (4p)</td><td>1h   &ndash; 6.5h</td><td>40m  &ndash; 7.5h</td></tr>
+<tr><td>3h45m (5p)</td><td>1h   &ndash; 7.5h</td><td>1h   &ndash; 9h  </td></tr>
+<tr><td>4h30m (6p)</td><td>1.5h &ndash; 9h  </td><td>1.5h &ndash; 10h </td></tr>
+<tr><td>5h15m (7p)</td><td>2h   &ndash; 10h </td><td>2h   &ndash; 11h </td></tr>
+<tr><td>6h00m (8p)</td><td>2.5h &ndash; 11h </td><td>2h   &ndash; 12h </td></tr>
 </table>
 </p>
 
