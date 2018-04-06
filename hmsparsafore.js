@@ -1,12 +1,17 @@
 // --------------------------------- 80chars ---------------------------------->
-// Parse & Generate Times & Dates. Or just times for now.
-// Functions to convert back & forth between amounts of time & strings. 
-// parseTOD takes a string like "3pm" and returns a time-of-day represented
-// as the number of seconds after midnight. 
-// parseHMS takes a string like "1m" or "2:30" and returns the amount of time in
-// seconds.
-// genTOD and genHMS are the inverses, generating string representations of
-// times of day and amounts of time.
+// Welcome to the H.M.S. Parsafore!
+// This library provides functions to parse & generate times of day & amounts of
+// time. Like "8:30am" or "7h 30m 59s".
+// * parseTOD takes a string like "3pm" and returns a time-of-day represented as
+//   the number of seconds after midnight, eg, 0 for midnight or 86399 for 
+//   11:59:59pm.
+// * parseHMS takes a string like "1m" or "2:30" and returns the amount of time
+//   in seconds. HMS for "hours, minutes, seconds", not "her majesty's ship".
+// * genTOD is the inverse of parseTOD, generating a string representation of a
+//   time of day like "3:30pm". Normally I prefer 24-hour time but the am/pm
+//   disambiguates that we're talking about time of day, not amount of time.
+// * genHMS is the inverse of parseHMS, generating a string representation of an
+//   amount of time like "59m".
 
 // Examples of parsing times of day:
 //   parseTOD("3pm") -> 15*3600 seconds ie 15 hours after midnight
@@ -26,23 +31,24 @@
 function testsuite() {
   function yo(tag, test) { return console.assert(test, tag) }
   console.log("Assertions! If nothing appears in the console between here --")
-  yo("3pm",             genTOD(parseTOD("3pm"))         === "3pm")
-  yo("2h30m",           genHMS(parseHMS("2h30m"))       === "2h30m")
-  yo("11:39-:48*8",     parseHMS("11:39 - :45*8")       === 20340)
-  yo("genTOD(0)",       genTOD(0)                       === "12am")
-  yo("12:01pm",         genTOD(86400/2+60)              === "12:01pm")
-  yo("genHMS(60)",      genHMS(60)                      === "1m")
-  yo("genHMS(86400)",   genHMS(86400)                   === "24h")
-  yo("NaN",             genTOD(parseTOD("pm"))          === "NaN:NaNam")
-  yo("1 pm",            genTOD(parseTOD("1 pm"))        === "1pm")
-  yo("11:30pm",         genTOD(parseTOD("11:30pm"))     === "11:30pm")
-  yo("8pm-7h30m",       genTOD(parseTOD("8pm - 7h30m")) === "12:30pm")
-  yo("12am-1h",         genTOD(parseTOD("12am-1h"))     === "11pm")
-  yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")       === 4.5*3600)
+  yo("3pm",             genTOD(parseTOD("3pm"))                 === "3pm")
+  yo("2h30m",           genHMS(parseHMS("2h30m"))               === "2h30m")
+  yo("11:39-:48*8",     parseHMS("11:39 - :45*8")               === 20340)
+  yo("genTOD(0)",       genTOD(0)                               === "12am")
+  yo("12:01pm",         genTOD(86400/2+60)                      === "12:01pm")
+  yo("genHMS(60)",      genHMS(60)                              === "1m")
+  yo("genHMS(86400)",   genHMS(86400)                           === "24h")
+  yo("NaN",             genTOD(parseTOD("pm"))                  === "NaN:NaNam")
+  yo("1 pm",            genTOD(parseTOD("1 pm"))                === "1pm")
+  yo("11:30pm",         genTOD(parseTOD("11:30pm"))             === "11:30pm")
+  yo("8pm-7h30m",       genTOD(parseTOD("8pm - 7h30m"))         === "12:30pm")
+  yo("12am-1h",         genTOD(parseTOD("12am-1h"))             === "11pm")
+  yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")               === 4.5*3600)
+  yo("pumpkin tea",     genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
   yo("sanity",          1===1)
   console.log("-- and here then we're good.")
 }
-// testsuite() // uncomment when testing and look in the browser console!
+testsuite() // uncomment when testing and look in the browser console!
 
 // Turn a Date object to unixtime in seconds
 function unixtm(d=null) {
@@ -75,9 +81,10 @@ function pumpkin(end=0, start=now()) {
   return x<0 ? x+86400 : x
 }
 
-// Return the time of day (expressed as seconds after midnight) that's delta 
-// seconds in the future, or delta seconds after the given start time. Teatime
-// is like t-time which is like d-day, as in "the time the thing will happen".
+// The inverse of pumpkin(). Return the time of day (expressed as seconds after
+// midnight) that's delta seconds in the future, or delta seconds after the 
+// given start time. Teatime is like t-time which is like d-day, as in "the time
+// the thing will happen".
 function teatime(delta, start=now()) { return (start + delta) % 86400 }
 
 // Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
@@ -179,18 +186,10 @@ function parseTOD(s=null) {
 }
 
 // Take a number of seconds after midnight, return a time-of-day string like 
-// "3pm". Default to now.
+// "3pm". Default to now. And syes false means round to the nearest minute.
 function genTOD(t=null, ampm=true, syes=false) {
   if (t===null) { t = now() }
-  if (t < 0) { return '??:??' }
-  
-  // Kludgey thing that technically works if we want to generate times of day
-  // strings from unixtimes as well, just might be fragile/errorprone:
-  //if (t > 86400) { // means it must be a unixtime and needs timezone offset
-  //  var offset = new Date().getTimezoneOffset()
-  //  t -= offset*60
-  //  t %= 86400
-  //}
+  if (t < 0 || t >= 86400) { return '??:??' }
   
   var h, m, s
   if (syes) {
@@ -207,14 +206,15 @@ function genTOD(t=null, ampm=true, syes=false) {
 
   var suf = '' // suffix, "am" or "pm" or nothing
   if (ampm) {
-    if      (h===0)          { suf = 'am'; h = 12  }
-    else if (h===12)         { suf = 'pm'          }
-    else if (h>=13 && h<=23) { suf = 'pm'; h -= 12 }
-    else                     { suf = 'am'          }
+    if      (h===0 || h===24) { suf = 'am'; h = 12  }
+    else if (h===12)          { suf = 'pm'          }
+    else if (h>=13 && h<=23)  { suf = 'pm'; h -= 12 }
+    else                      { suf = 'am'          }
   }
   //var out = `${h}:${m<10 ? '0'+m : m}:${s<10 ? '0'+s : s}${suf}` // ES6
   var out = '' + h + ':' + (m<10 ? '0'+m : m) + ':' + (s<10 ? '0'+s : s) + suf
-  out = out.replace(/:00(?::00)?([ap]m)/, '$1')
+  out = out.replace(/:00(?::00)?([ap]m)$/, '$1') // eg 3:00am -> 3am
+  out = out.replace(/(:\d\d):00$/, '$1') // eg 3:21:00 -> 3:21
   return out
 }
 
@@ -303,6 +303,12 @@ function dateat(t=0) {
   d.setTime(dayfloor(d).getTime() + 1000*t)
   if (d < now) { d.setTime(d.getTime() + 1000*86400) }
   return d  
+}
+
+// Takes unixtime and returns time of day represented as seconds after midnight.
+function TODfromUnixtime(t) {
+  var offset = new Date().getTimezoneOffset()
+  return (t - offset*60) % 86400
 }
 
 *******************************************************************************/
