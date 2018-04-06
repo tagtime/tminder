@@ -68,3 +68,4 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2017.06.08 Bugfix for case of more than 200 pings needed
 * 2018.01.11 Stripped out the Node.js parts; pure clientside now
 * 2018.01.11 Added 95% and 98% confidence intervals to the table
+* 2018.01.13 Added confidence intervals up top too based on probability

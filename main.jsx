@@ -1,3 +1,4 @@
+// --------------------------------- 80chars ---------------------------------->
 const GAP = 3/4  // TagTime's frequency is 3/4 hours
 const DP = 6 // Decimal places for showing the probability
 
@@ -72,8 +73,8 @@ function shci(ep, pr) { // "shci" = "show confidence interval"
   p = Math.max(0, p)
   const low = 3600 * invpp(ep, (1-p)/2)
   const hi  = 3600 * invpp(ep, 1-(1-p)/2)
-  return `${shn(p*100, 1)}% CI for ${ep} pings: ${shead(-1, low)} –` +
-                                              ` ${shead(-1, hi)}`
+  return `${shn(p*100, 1)}% CI for ${splur(ep, "ping")}: <br/>` +
+         `${shead(-1, low)} &ndash; ${shead(-1, hi)}`
 }
 
 // The state has eep hours, eep pings, deadline, time to deadline, and 
@@ -89,8 +90,6 @@ class Tminder extends React.Component {
     dl: 0,   // deadline time-of-day as seconds after midnight
     td: -1,  // time to deadline in seconds (invariant: dl<0 or td<0)
     pr: 1,   // probability
-    a: 0,
-    b: 0,
   } }
   
   // run every second to refresh probability (& time to deadline)
@@ -164,9 +163,8 @@ class Tminder extends React.Component {
       <p className="implies">{shp(this.state.pr)}</p>
       <p>{shpost(this.state.ep, this.state.dl, this.state.td)}</p>
     </div>
-    <div className="ci">
-      <p>{shci(this.state.ep, this.state.pr)}</p>
-    </div>
+    <div
+         dangerouslySetInnerHTML={{__html: shci(this.state.ep, this.state.pr)}}/>
   </div> ) }
 }
 
