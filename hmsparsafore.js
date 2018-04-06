@@ -48,7 +48,7 @@ function testsuite() {
   yo("sanity",          1===1)
   console.log("-- and here then we're good.")
 }
-testsuite() // uncomment when testing and look in the browser console!
+//testsuite() // uncomment when testing and look in the browser console!
 
 // Turn a Date object to unixtime in seconds
 function unixtm(d=null) {
@@ -78,7 +78,20 @@ function now() {
 // Also known as the pumpkin delta or time till d-day.
 function pumpkin(end=0, start=now()) {
   var x = end - start
-  return x<0 ? x+86400 : x
+  return x<0 ? x+86400 : x // eg, amount of time from 3pm to 2pm is 23 hours
+}
+
+// Equivalent implementation of pumpkin(). Tested, works.
+// Given a time of day expressed as seconds after midnight (default midnight),
+// return the number of seconds from now till that time
+function pumpkin2(t=0) {
+  var p = new Date() // p will be pumpkin time after we do setHours etc
+  var now = p.getTime()
+  p.setHours(Math.floor(t/3600))
+  p.setMinutes(Math.floor(t%3600/60))
+  p.setSeconds(t%60)
+  var x = (p.getTime() - now)/1000
+  return x < 0 ? x+86400 : x
 }
 
 // The inverse of pumpkin(). Return the time of day (expressed as seconds after
@@ -228,7 +241,7 @@ since it doesn't do an eval.
 
 // Helper functions for parseTOD
 function el(x, l) { return l.some(i => i===x) } // Whether x element of list l
-function pi(s) { return parseInt(s, 10) } // Convenience/helper function
+function pi(s) { return parseInt(s, 10) }
 
 // Turn a string like "3pm" or "15:30" into [H,M]
 // Idea from http://stackoverflow.com/a/14787410/4234
@@ -279,19 +292,6 @@ function dob(t=null) {
   return isnum(t) ? new Date(1000*t) : null
 }
 
-// Equivalent implementation of pumpkin(). Tested, works.
-// Given a time of day expressed as seconds after midnight (default midnight),
-// return the number of seconds from now till that time
-function pumpkin(t=0) {
-  var p = new Date() // p will be pumpkin time after we do setHours etc
-  var now = p.getTime()
-  p.setHours(Math.floor(t/3600))
-  p.setMinutes(Math.floor(t%3600/60))
-  p.setSeconds(t%60)
-  var x = (p.getTime() - now)/1000
-  return x < 0 ? x+86400 : x
-}
-
 // Tested, works.
 // Given a time of day expressed as seconds after midnight (default midnight),
 // return a Date object corresponding to the soonest future timestamp that
@@ -305,6 +305,7 @@ function dateat(t=0) {
   return d  
 }
 
+// Tested, works, at least for current and future timestamps.
 // Takes unixtime and returns time of day represented as seconds after midnight.
 function TODfromUnixtime(t) {
   var offset = new Date().getTimezoneOffset()
