@@ -12,6 +12,9 @@
 //   disambiguates that we're talking about time of day, not amount of time.
 // * genHMS is the inverse of parseHMS, generating a string representation of an
 //   amount of time like "59m".
+// Other handy functions this library makes available:
+// * pumpkin gives the amount of time till a deadline
+// * teatime is the inverse of pumpkin: what time of day is x seconds from now
 
 // Examples of parsing times of day:
 //   parseTOD("3pm") -> 15*3600 seconds ie 15 hours after midnight
@@ -27,83 +30,60 @@
 //   genHMS(60) -> "1m"
 //   genHMS(86400) -> "24h"
 
+var SID = 86400 // handy constant for seconds in a day
+
 // Run this in the browser's javascript console and look for failed assertions
 function testsuite() {
   function yo(tag, test) { return console.assert(test, tag) }
   console.log("Assertions! If nothing appears in the console between here --")
-  yo("3pm",             genTOD(parseTOD("3pm"))                 === "3pm")
-  yo("2h30m",           genHMS(parseHMS("2h30m"))               === "2h30m")
-  yo("11:39-:48*8",     parseHMS("11:39 - :45*8")               === 20340)
-  yo("genTOD(0)",       genTOD(0)                               === "12am")
-  yo("12:01pm",         genTOD(86400/2+60)                      === "12:01pm")
-  yo("genHMS(60)",      genHMS(60)                              === "1m")
-  yo("genHMS(86400)",   genHMS(86400)                           === "24h")
-  yo("NaN",             genTOD(parseTOD("pm"))                  === "NaN:NaNam")
-  yo("1 pm",            genTOD(parseTOD("1 pm"))                === "1pm")
-  yo("11:30pm",         genTOD(parseTOD("11:30pm"))             === "11:30pm")
-  yo("8pm-7h30m",       genTOD(parseTOD("8pm - 7h30m"))         === "12:30pm")
-  yo("12am-1h",         genTOD(parseTOD("12am-1h"))             === "11pm")
-  yo("4.5*1 + 45m*0",   parseHMS("4.5*1 + 45m*0")               === 4.5*3600)
-  yo("pumpkin tea",     genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
-  yo("sanity",          1===1)
+  yo("sanity", 1===1)
+  yo("3pm",           genTOD(parseTOD("3pm"))                 === "3pm")
+  yo("2h30m",         genHMS(parseHMS("2h30m"))               === "2h30m")
+  yo("11:39-:48*8",   parseHMS("11:39 - :45*8")               === 20340)
+  yo("genTOD(0)",     genTOD(0)                               === "12am")
+  yo("12:01pm",       genTOD(SID/2+60)                        === "12:01pm")
+  yo("genHMS(60)",    genHMS(60)                              === "1m")
+  yo("genHMS(SID)",   genHMS(SID)                             === "24h")
+  yo("NaN",           genTOD(parseTOD("pm"))                  === "NaN'o'clock")
+  yo("1 pm",          genTOD(parseTOD("1 pm"))                === "1pm")
+  yo("11:30pm",       genTOD(parseTOD("11:30pm"))             === "11:30pm")
+  yo("8pm-7h30m",     genTOD(parseTOD("8pm - 7h30m"))         === "12:30pm")
+  yo("12am-1h",       genTOD(parseTOD("12am-1h"))             === "11pm")
+  yo("4.5*1 + 45m*0", parseHMS("4.5*1 + 45m*0")               === 4.5*3600)
+  yo("pumpkin tea",   genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
   console.log("-- and here then we're good.")
+  return null
 }
 //testsuite() // uncomment when testing and look in the browser console!
-
-// Turn a Date object to unixtime in seconds
-function unixtm(d=null) {
-  if (d===null) { d = new Date() }
-  return d.getTime()/1000
-}
-
-// Take a Date object, set the time back to midnight, return new Date object
-function dayfloor(d) {
-  var x = new Date(d)
-  x.setHours(0)
-  x.setMinutes(0)
-  x.setSeconds(0)
-  return x
-}
 
 // Return the time-of-day right now, as a number of seconds after midnight
 function now() {
   var d = new Date()
-  return unixtm(d) - unixtm(dayfloor(d))
+  var now = d.getTime()
+  d.setHours(0)
+  d.setMinutes(0)
+  d.setSeconds(0) // d is now the previous midnight
+  return (now - d.getTime()) / 1000
 }
 
-// Seconds remaining until the given end time. If start time is given then it's 
-// just the number of seconds from start to end (which are both given as times
-// of day expressed as seconds after midnight). Pumpkin as in how long till you
-// turn in to one, or "amount of time till the thing happens" or "t minus...".
+// Seconds remaining until the given time of day (default midnight) specified as
+// a number of seconds after midnight. Pumpkin as in how long till you turn in
+// to one, or "amount of time till the thing happens" or "t minus...".
 // Also known as the pumpkin delta or time till d-day.
-function pumpkin(end=0, start=now()) {
-  var x = end - start
-  return x<0 ? x+86400 : x // eg, amount of time from 3pm to 2pm is 23 hours
-}
-
-// Equivalent implementation of pumpkin(). Tested, works.
-// Given a time of day expressed as seconds after midnight (default midnight),
-// return the number of seconds from now till that time
-function pumpkin2(t=0) {
-  var p = new Date() // p will be pumpkin time after we do setHours etc
-  var now = p.getTime()
-  p.setHours(Math.floor(t/3600))
-  p.setMinutes(Math.floor(t%3600/60))
-  p.setSeconds(t%60)
-  var x = (p.getTime() - now)/1000
-  return x < 0 ? x+86400 : x
-}
+// Adding a day and mod'ing by a day is the same as adding a day if the time to
+// the deadline is negative, eg, amt of time from 3pm to 2pm is -1+24=23 hours.
+function pumpkin(deadline=0) { return (deadline - now() + SID) % SID }
 
 // The inverse of pumpkin(). Return the time of day (expressed as seconds after
-// midnight) that's delta seconds in the future, or delta seconds after the 
-// given start time. Teatime is like t-time which is like d-day, as in "the time
-// the thing will happen".
-function teatime(delta, start=now()) { return (start + delta) % 86400 }
+// midnight) that's delta seconds in the future. Teatime is like t-time which is
+// like d-day, as in "the time the thing will happen".
+function teatime(delta) { return (now() + delta) % SID }
 
 // Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
 function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
 
-// Eval but just return null if syntax error. Obviously don't use serverside.
+// Eval but just return null if syntax error. 
+// Obviously don't use serverside with user-supplied input.
 function laxeval(s) {
   try { 
     var x = eval(s)
@@ -151,10 +131,9 @@ Thanks to Mathematica for turning that into this: h===0 && m===0 || s>0 && syes
 
 // Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> "1h"
 function genHMS(t, syes=false) { // syes is whether we care about seconds
-  if (isNaN(t)) { return '??s' }
+  if (!isnum(t)) { return '??s' }
   if (t<0) { return '-' + genHMS(-t, syes) }
   t = Math.round(t)
-  if (!isnum(t)) { return 'NaNs' }
   var x = ""
   var h = Math.floor(t/3600)
   t %= 3600
@@ -194,15 +173,15 @@ function parseTOD(s=null) {
   s = s.replace(/(?:^|[^:\d])([1-9]|1[01])pm?/gi, '($1+12)h')    // "1pm"
   s = s.replace(/\b([1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m') // "1123pm"
   s = s.replace(/pm?/gi, '')                   // strip other "pm"s
-  let x = parseHMS(s)
-  return x<0 ? x+86400 : x // eg "12am-1h" is -3600 which is really 86400-3600
+  return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }
 
 // Take a number of seconds after midnight, return a time-of-day string like 
 // "3pm". Default to now. And syes false means round to the nearest minute.
 function genTOD(t=null, ampm=true, syes=false) {
   if (t===null) { t = now() }
-  if (t < 0 || t >= 86400) { return '??:??' }
+  if (!isnum(t)) { return "NaN'o'clock" }
+  if (t < 0 || t >= SID) { return '??:??' }
   
   var h, m, s
   if (syes) {
@@ -232,25 +211,22 @@ function genTOD(t=null, ampm=true, syes=false) {
 }
 
 
-
 /*******************************************************************************
 FUNCTIONS WE'RE NOT CURRENTLY USING:
 
-Time-of-day parser that works reasonably and would be safe for server-side 
-since it doesn't do an eval.
-
-// Helper functions for parseTOD
+// Helper functions for parseTOD_safe
 function el(x, l) { return l.some(i => i===x) } // Whether x element of list l
 function pi(s) { return parseInt(s, 10) }
 
-// Turn a string like "3pm" or "15:30" into [H,M]
+// [Tested, works]
+// Turn a string like "3pm" or "15:30" into a time of day represented as a
+// number of seconds after midnight. This version doesn't handle arithmetic, ie,
+// no eval(), so is safe to use server-side.
 // Idea from http://stackoverflow.com/a/14787410/4234
-function parseTOD(time=null) {  
+function parseTOD_safe(time=null) {  
   if (time===null) {
     var d = new Date()
-    var h = d.getHours()
-    var m = d.getMinutes()
-    return [h, m]
+    return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
   }
   time += "" // make sure it's a string
   var pm = /p/i.test(time)               // whether it's PM
@@ -265,12 +241,13 @@ function parseTOD(time=null) {
   else if (nd===3      ) { [h,m] = [pi(da[0]),                pi(da[1]+da[2])] }
   else if (el(nd,[1,2])) { [h,m] = [pi(da[0]+(da[1] || '')),  0              ] }
 
-  if (m<0 || m>=60 || h>29) { return [-1, -1] }
+  if (m<0 || m>=60 || h>29) { return -1 }
   if (pm && h>0 && h<12) { h += 12 } // make sure it's 24-hour time
   if (am && h===12) { h = 0 }        // 12am means 0:00 (tho 12pm means 12:00)
-  return [h % 24, m]
+  return (h%24)*3600 + m*60
 }
 
+// [I think I used this in the past so it probably works]
 // Show time-of-day given a date object, like "3:00:00pm", default now
 function showTOD(d=null, secs=true) {
   if (d===null) { d = new Date() }
@@ -286,13 +263,16 @@ function HMfromS(t) {
   return H + ":" + (M<10 ? "0"+M : M)
 }
 
-// Turn a unixtime in seconds to a Date object
-function dob(t=null) {
-  if (t===null) { return new Date() }
-  return isnum(t) ? new Date(1000*t) : null
+// [Definitely works]
+// Take a Date object, set the time back to midnight, return new Date object
+function dayfloor(d) {
+  var x = new Date(d)
+  x.setHours(0)
+  x.setMinutes(0)
+  x.setSeconds(0)
+  return x
 }
 
-// Tested, works.
 // Given a time of day expressed as seconds after midnight (default midnight),
 // return a Date object corresponding to the soonest future timestamp that
 // matches that time of day
@@ -305,7 +285,19 @@ function dateat(t=0) {
   return d  
 }
 
-// Tested, works, at least for current and future timestamps.
+// Turn a Date object (default now) to unixtime in seconds
+function unixtm(d=null) {
+  if (d===null) { d = new Date() }
+  return d.getTime()/1000
+}
+
+// Turn a unixtime in seconds to a Date object
+function dob(t=null) {
+  if (t===null) { return new Date() }
+  return isnum(t) ? new Date(1000*t) : null
+}
+
+// [Tested, works, at least for current and future timestamps]
 // Takes unixtime and returns time of day represented as seconds after midnight.
 function TODfromUnixtime(t) {
   var offset = new Date().getTimezoneOffset()
