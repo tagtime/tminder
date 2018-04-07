@@ -70,3 +70,4 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2018.01.11 Added 95% and 98% confidence intervals to the table
 * 2018.01.13 Added confidence intervals up top too based on probability
 * 2018.04.06 Bugfix in genTOD(), renamed pgtime to hmsparsafore
+* 2018.04.06 Robustified, refactored the H.M.S. Parsafore
