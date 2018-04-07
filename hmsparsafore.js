@@ -164,6 +164,7 @@ function parseTOD(s=null) {
     return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
   }
   s = s.replace(/\s/g, '') // nix whitespace eg "1 pm" -> "1pm"
+  s = s.replace(/([ap])\.m\.?/gi, '$1m')       // a.m. -> am
   s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')     // 0600 -> 06:00 (military style)
   s = s.replace(/\b12am?/gi, '0')              // 12am -> 0:00
   s = s.replace(/\b12:(\d\d?)am?/gi, '$1m')    // 12:30am -> 0:30
