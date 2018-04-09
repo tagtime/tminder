@@ -186,23 +186,28 @@ function genHMS(t, syes=false) { // syes is whether we care about seconds
 // Parse a time-of-day string, return seconds after midnight.
 // Also accepts arithmetical expressions like 2pm + 1h
 // WARNING: It does that with an eval so this is for clientside code only.
+// Since the output is number of seconds after midnight, we convert a time like
+// "13:57" to "13h57m" and then do parseHMS of that.
 function parseTOD(s=null) {
   if (s===null) {
     var d = new Date()
     return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
   }
-  s = s.replace(/\s/g, '')   // nix whitespace eg "1 pm" -> "1pm"
-  s = s.replace(/([ap])\.m\.?/gi, '$1m')       // a.m. -> am
-  s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')     // 0600 -> 06:00 (military style)
-  s = s.replace(/\b12am?/gi, '0')              // 12am -> 0:00
-  s = s.replace(/\b12:(\d\d?)am?/gi, '$1m')    // 12:30am -> 0:30
-  s = s.replace(/\b12(\d\d)am?/gi, '$1m')      // 1230am -> 0:30
-  s = s.replace(/am?/gi, '')                   // just strip other "am"s
-  // convert "HH pm"/"HH:MM pm"/"HHMM pm" to "[HH+12]"/"[HH+12]:MM"/"[HH+12]MM"
-  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)pm?/gi,   '($1+12)h$2m')  // eg 1:30pm
-  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])pm?/gi, '($1+12)h')     // eg 1pm
-  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m')  // eg 1123pm
-  s = s.replace(/pm?/gi, '')                   // strip other "pm"s
+  // deal w/ spaces, dots, convert "AM"/"PM" to "A"/"P", convert military style
+  s = s.replace(/\s/g, '')   // nix whitespace eg "1 PM" -> "1PM"
+  s = s.replace(/([ap])\.m\.?/gi, '$1m')    // eg A.M. -> AM
+  s = s.replace(/([ap])m/gi, '$1')          // ie AM -> A & PM -> P
+  s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')  // eg 0600 -> 06:00 (military style)
+  // next 3 lines: special case for 12something am -> something minutes
+  s = s.replace(/\b12am?/gi, '0')           // eg 12A -> 0
+  s = s.replace(/\b12:(\d\d?)am?/gi, '$1m') // eg 12:30A -> 30m
+  s = s.replace(/\b12(\d\d)am?/gi, '$1m')   // eg 1230A -> 30m
+  s = s.replace(/a/gi, '')                  // just strip other "am"s
+  // next 3 lines: "HH:MM pm"/"HH pm"/"HHMM pm" to "[HH+12]hMMm" eg 1pm -> 13h
+  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)p/gi, '($1+12)h$2m') // 1:09p -> 13h9m
+  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])p/gi, '($1+12)h') // eg 1p -> 13h
+  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)p/gi, '($1+12)h$2m') // 1159p -> 23h59m
+  s = s.replace(/p/gi, '')                   // strip other "pm"s
   return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }
 
