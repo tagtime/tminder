@@ -202,12 +202,12 @@ function parseTOD(s=null) {
   s = s.replace(/\b12am?/gi, '0')           // eg 12A -> 0
   s = s.replace(/\b12:(\d\d?)am?/gi, '$1m') // eg 12:30A -> 30m
   s = s.replace(/\b12(\d\d)am?/gi, '$1m')   // eg 1230A -> 30m
-  s = s.replace(/a/gi, '')                  // just strip other "am"s
-  // next 3 lines: "HH:MM pm"/"HH pm"/"HHMM pm" to "[HH+12]hMMm" eg 1pm -> 13h
-  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)p/gi, '($1+12)h$2m') // 1:09p -> 13h9m
-  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])p/gi, '($1+12)h') // eg 1p -> 13h
-  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)p/gi, '($1+12)h$2m') // 1159p -> 23h59m
-  s = s.replace(/p/gi, '')                   // strip other "pm"s
+  s = s.replace(/a/gi, '')                  // just strip other "AM"s
+  // next 3 lines: "HH:MM pm"/"HH pm"/"HHMM pm" to "[HH+12]hMMm" eg 1PM -> 13h
+  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)p/gi, '($1+12)h$2m') // 1:09P -> 13h9m
+  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])p/gi, '($1+12)h') // eg 1P -> 13h
+  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)p/gi, '($1+12)h$2m') // 1159P -> 23h59m
+  s = s.replace(/p/gi, '')                   // strip other "PM"s
   return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }
 
