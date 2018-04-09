@@ -32,25 +32,63 @@
 
 var SID = 86400 // handy constant for seconds in a day
 
+// Helper function for testsuite()
+function testy(tag, test) { return console.assert(test, tag) }
+
+// Canonicalize a time of day / amount of time by parsing it and regenerating it
+function canTOD(s) { return genTOD(parseTOD(s)) }
+function canHMS(s) { return genHMS(parseHMS(s)) }
+
+// Helper function for testsuite()
+function testTOD(orig, canon=null) { 
+  if (canon === null) { canon = orig }
+  return testy(orig, canTOD(orig) === canon) 
+}
+
+// Helper function for testsuite()
+function testHMS(orig, canon=null) { 
+  if (canon === null) { canon = orig }
+  return testy(orig, canHMS(orig) === canon)
+}
+
 // Run this in the browser's javascript console and look for failed assertions
 function testsuite() {
-  function yo(tag, test) { return console.assert(test, tag) }
   console.log("Assertions! If nothing appears in the console between here --")
-  yo("sanity", 1===1)
-  yo("3pm",           genTOD(parseTOD("3pm"))                 === "3pm")
-  yo("2h30m",         genHMS(parseHMS("2h30m"))               === "2h30m")
-  yo("11:39-:48*8",   parseHMS("11:39 - :45*8")               === 20340)
-  yo("genTOD(0)",     genTOD(0)                               === "12am")
-  yo("12:01pm",       genTOD(SID/2+60)                        === "12:01pm")
-  yo("genHMS(60)",    genHMS(60)                              === "1m")
-  yo("genHMS(SID)",   genHMS(SID)                             === "24h")
-  yo("NaN",           genTOD(parseTOD("pm"))                  === "NaN'o'clock")
-  yo("1 pm",          genTOD(parseTOD("1 pm"))                === "1pm")
-  yo("11:30pm",       genTOD(parseTOD("11:30pm"))             === "11:30pm")
-  yo("8pm-7h30m",     genTOD(parseTOD("8pm - 7h30m"))         === "12:30pm")
-  yo("12am-1h",       genTOD(parseTOD("12am-1h"))             === "11pm")
-  yo("4.5*1 + 45m*0", parseHMS("4.5*1 + 45m*0")               === 4.5*3600)
-  yo("pumpkin tea",   genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
+
+  testy("sanity", 1===1)
+  testy("pumpkin tea", genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
+
+  testTOD("3pm")
+  testTOD("3:12pm")
+  testTOD("312pm", "3:12pm")
+  testTOD("03pm", "3pm")
+  testTOD("03:12pm", "3:12pm")
+  testTOD("0312pm", "3:12pm")
+  testTOD("01:59am", "1:59am")
+  testTOD("11:30pm")
+  testTOD("12:01", "12:01pm")
+  testTOD("0", "12am")
+  testTOD("1 pm", "1pm")
+  testTOD("3:10 p.m.", "3:10pm")
+  testTOD("12am-1h", "11pm")
+  testTOD("8pm - 7h30m", "12:30pm")
+  testTOD("pm", "NaN'o'clock")
+  testTOD("1259am", "12:59am")
+  testTOD("12:3am", "12:03am")
+  testTOD("12:3pm", "12:03pm")
+  testTOD("1:3pm", "1:03pm")
+  testTOD("1:03pm")
+  testTOD("8 p.m.", "8pm")
+
+  testHMS("0", "0s")
+  testHMS("2h30m")
+  testHMS("8.5h", "8h30m")
+  testHMS("60s", "1m")
+  testHMS("86400s", "24h")
+  testHMS("11:39 - :45*8", "5h39m")
+  testHMS("11:39 - :48*8", "5h15m")
+  testHMS("4.5*1 + 45m*0", "4h30m")
+
   console.log("-- and here then we're good.")
   return null
 }
@@ -145,16 +183,6 @@ function genHMS(t, syes=false) { // syes is whether we care about seconds
   return x
 }
 
-/* Examples of times of day to parse:
-1259am -> 0:59
-12:3am -> 0:03
-12:3pm -> 12:03pm
-1:3pm -> 13:03 (or -1)
-1:03p -> 13:03
-10pm-3h -> 19:00
-abc -> NaN
-*/
-
 // Parse a time-of-day string, return seconds after midnight.
 // Also accepts arithmetical expressions like 2pm + 1h
 // WARNING: It does that with an eval so this is for clientside code only.
@@ -163,16 +191,17 @@ function parseTOD(s=null) {
     var d = new Date()
     return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
   }
-  s = s.replace(/\s/g, '') // nix whitespace eg "1 pm" -> "1pm"
+  s = s.replace(/\s/g, '')   // nix whitespace eg "1 pm" -> "1pm"
   s = s.replace(/([ap])\.m\.?/gi, '$1m')       // a.m. -> am
   s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')     // 0600 -> 06:00 (military style)
   s = s.replace(/\b12am?/gi, '0')              // 12am -> 0:00
   s = s.replace(/\b12:(\d\d?)am?/gi, '$1m')    // 12:30am -> 0:30
   s = s.replace(/\b12(\d\d)am?/gi, '$1m')      // 1230am -> 0:30
   s = s.replace(/am?/gi, '')                   // just strip other "am"s
-  s = s.replace(/\b([1-9]|1[01]):(\d\d?)pm?/gi,   '($1+12)h$2m') // "1:30"
-  s = s.replace(/(?:^|[^:\d])([1-9]|1[01])pm?/gi, '($1+12)h')    // "1pm"
-  s = s.replace(/\b([1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m') // "1123pm"
+  // convert "HH pm"/"HH:MM pm"/"HHMM pm" to "[HH+12]"/"[HH+12]:MM"/"[HH+12]MM"
+  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)pm?/gi,   '($1+12)h$2m')  // eg 1:30pm
+  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])pm?/gi, '($1+12)h')     // eg 1pm
+  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)pm?/gi,     '($1+12)h$2m')  // eg 1123pm
   s = s.replace(/pm?/gi, '')                   // strip other "pm"s
   return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }

@@ -72,3 +72,4 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2018.04.06 Bugfix in genTOD(), renamed pgtime to hmsparsafore
 * 2018.04.06 Robustified, refactored the H.M.S. Parsafore
 * 2018.04.07 Bugfix: parse "8 p.m."
+* 2018.04.09 Bugfix: parse "03pm"
