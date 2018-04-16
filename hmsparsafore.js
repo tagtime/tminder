@@ -1,17 +1,19 @@
-// --------------------------------- 80chars ---------------------------------->
 // Welcome to the H.M.S. Parsafore!
-// This library provides functions to parse times of day & amounts of time. Like
-// "8:30am" or "7h 30m 59s".
+// This library provides functions to parse amounts of time & times of day. Like
+// "7h 30m 59s" or "8:30am".
+// * parseHMS takes a string like "1m" or "2:30" and returns the amount of time
+//   in seconds. HMS for "hours, minutes, seconds", not "her majesty's ship".
 // * parseTOD takes a string like "3pm" and returns a time-of-day represented as
 //   the number of seconds after midnight, eg, 0 for midnight or 86399 for 
 //   11:59:59pm.
-// * parseHMS takes a string like "1m" or "2:30" and returns the amount of time
-//   in seconds. HMS for "hours, minutes, seconds", not "her majesty's ship".
+// Both of those allow arbitrary arithmetical expressions like "60s / 2" (ie,
+// 30s), or "3pm + 1h" (ie, 4pm).
 // Also we have the inverse of those to generate/format times of day & amounts
 // of time as strings.
 // * genTOD is the inverse of parseTOD, generating a string representation of a
-//   time of day like "3:30pm". Normally I prefer 24-hour time but the am/pm
-//   nicely disambiguates that it's a time of day rather than amount of time.
+//   time of day like "3:30pm". Normally we'd prefer 24-hour time but the am/pm
+//   nicely disambiguates that it's a time of day rather than amount of time. In
+//   any case there's an option to generate 24-hour time.
 // * genHMS is the inverse of parseHMS, generating a string representation of an
 //   amount of time like "59m".
 // Other handy functions this library makes available:
@@ -279,6 +281,7 @@ function testsuite() {
   testHMS("1s")
   testHMS("1m")
   testHMS("60s", "1m")
+  testHMS("60s / 2", "30s")
   testHMS("2h")
   testHMS("3600s", "1h")
   testHMS("3601s", "1h")
@@ -403,3 +406,5 @@ function TODfromUnixtime(t) {
 }
 
 */
+
+// --------------------------------- 80chars ---------------------------------->
