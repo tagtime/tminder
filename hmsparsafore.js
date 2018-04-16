@@ -252,6 +252,7 @@ function testsuite() {
   testTOD("3:10 p.m.", "3:10pm")
   testTOD("12am-1h", "11pm")
   testTOD("8PM - 7h30m", "12:30pm")
+  testTOD("8pm - 7h + 30m", "1:30pm")
   testTOD("pm", "NaN'o'clock")
   testTOD("1259am", "12:59am")
   testTOD("12:3am", "12:03am")
