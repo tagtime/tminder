@@ -147,7 +147,7 @@ Thanks to Mathematica for turning that into: h===0 && m===0 || s>0 && syes
 // Note that by default this drops seconds. So 65 seconds would be formated as
 // just "1m" and even 119s -> "1m" even though that's 1 second shy of 2 minutes.
 function genHMS(t, syes=false) { // syes is whether we care about seconds
-  if (!isnum(t)) { return '??s' }
+  if (!isnum(t)) { return 'NaNs' }
   if (t<0) { return '-' + genHMS(-t, syes) }
   t = Math.floor(t) // drop fractions of seconds
   var x = ""
@@ -229,7 +229,7 @@ function testsuite() {
   testTOD("1am"); testTOD("1:01am")
   testTOD("2am"); testTOD("2:20am")
   testTOD("3am"); testTOD("3:59am")
-  testTOD("4am"); testTOD("4:30am")
+  testTOD("4a", "4am"); testTOD("4:30am")
   testTOD("5am"); testTOD("5:18am")
   testTOD("9am"); testTOD("9:48am")
   testTOD("10am"); testTOD("10:00am", "10am")
@@ -272,6 +272,8 @@ function testsuite() {
   testTOD("3pm 4pm", "7pm")
   testTOD("11pm 11pm", "10am")
   testTOD("3a m + 1m", "3:01am")
+  testTOD("4am + 59s + 1s", "4:01am")
+  testTOD("3am + 3m * 4", "3:12am")
 
   testHMS("1s")
   testHMS("1m")
@@ -281,7 +283,7 @@ function testsuite() {
   testHMS("3601s", "1h")
   testHMS("24h")
   testHMS("1d", "24h")
-  testHMS("1w", "??s")
+  testHMS("1w", "NaNs")
   testHMS("0", "0s")
   testHMS("22", "22h")
   testHMS("2h30m")
@@ -298,7 +300,7 @@ function testsuite() {
   testHMS("2+2", "4h")
   testHMS("1h59m59s", "1h59m")
   testHMS("86460s", "24h1m")
-  testHMS("abc", "??s")
+  testHMS("abc", "NaNs")
 }
 //testsuite() // uncomment when testing and look in the browser console!
 
