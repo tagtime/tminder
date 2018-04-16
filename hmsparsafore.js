@@ -49,11 +49,7 @@ const SID = 86400 // handy constant for seconds in a day
 // Return the time-of-day right now, as a number of seconds after midnight
 function now() {
   var d = new Date()
-  var now = d.getTime()
-  d.setHours(0)
-  d.setMinutes(0)
-  d.setSeconds(0) // d is now the previous midnight
-  return (now - d.getTime()) / 1000
+  return 3600*d.getHours() + 60*d.getMinutes() + d.getSeconds()
 }
 
 // Seconds remaining until the given time of day (default midnight) specified as

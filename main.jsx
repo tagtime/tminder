@@ -63,7 +63,7 @@ function shead(dl, td) { // "shead" = "show deadline"
 function shpost(ep, dl, td) { // "shpost" = "show post-probability stuff"
   let pre = `probability of ${isnum(ep) ? ep : '??'}+ pings `
   return dl<0 ? `${pre} in ${genHMS(td)}` :
-                `${pre} between now (${genTOD(null, true, true)}) and deadline`
+                `${pre} between now (${genTOD(now(), true, true)}) and deadline`
 }
 
 // Given the number of eep pings and a probability, return the string that comes
