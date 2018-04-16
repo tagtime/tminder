@@ -1,20 +1,23 @@
 // --------------------------------- 80chars ---------------------------------->
 // Welcome to the H.M.S. Parsafore!
-// This library provides functions to parse & generate times of day & amounts of
-// time. Like "8:30am" or "7h 30m 59s".
+// This library provides functions to parse times of day & amounts of time. Like
+// "8:30am" or "7h 30m 59s".
 // * parseTOD takes a string like "3pm" and returns a time-of-day represented as
 //   the number of seconds after midnight, eg, 0 for midnight or 86399 for 
 //   11:59:59pm.
 // * parseHMS takes a string like "1m" or "2:30" and returns the amount of time
 //   in seconds. HMS for "hours, minutes, seconds", not "her majesty's ship".
+// Also we have the inverse of those to generate/format times of day & amounts
+// of time as strings.
 // * genTOD is the inverse of parseTOD, generating a string representation of a
 //   time of day like "3:30pm". Normally I prefer 24-hour time but the am/pm
-//   disambiguates that we're talking about time of day, not amount of time.
+//   nicely disambiguates that it's a time of day rather than amount of time.
 // * genHMS is the inverse of parseHMS, generating a string representation of an
 //   amount of time like "59m".
 // Other handy functions this library makes available:
-// * pumpkin gives the amount of time till a deadline
-// * teatime is the inverse of pumpkin: what time of day is x seconds from now
+// * now() gives the current number of seconds since midnight
+// * pumpkin(t) gives the amount of time till a deadline t
+// * teatime(x) gives the time of day x seconds from now (inverse of pumpkin)
 
 // Examples of parsing times of day:
 //   parseTOD("3pm") -> 15*3600 seconds ie 15 hours after midnight
@@ -23,78 +26,25 @@
 // Examples of parsing amounts of time:
 //   parseHMS("2h30m") -> 2.5*3600
 //   parseHMS("11:39 - :45*8") -> 5.7*3600
-// Examples of generating times of day:
+// Examples of formatting times of day:
 //   genTOD(0) -> "12am"
 //   genTOD(86400/2+60) -> "12:01pm"
-// Examples of generating string representations of amounts of time:
+// Examples of formatting amounts of time:
+//   genHMS(1) -> "1s"
 //   genHMS(60) -> "1m"
-//   genHMS(86400) -> "24h"
+//   genHMS(3600) -> "1h"
+//   genHMS(86400+1) -> "24h" (by default, suppress seconds for times >= 60s)
+//   genHMS(86460) -> "24h1m"
 
-var SID = 86400 // handy constant for seconds in a day
+/******************************************************************************
+ *                                  CONSTANTS                                 *
+ ******************************************************************************/
 
-// Helper function for testsuite()
-function testy(tag, test) { return console.assert(test, tag) }
+const SID = 86400 // handy constant for seconds in a day
 
-// Canonicalize a time of day / amount of time by parsing it and regenerating it
-function canTOD(s) { return genTOD(parseTOD(s)) }
-function canHMS(s) { return genHMS(parseHMS(s)) }
-
-// Helper function for testsuite()
-function testTOD(orig, canon=null) { 
-  if (canon === null) { canon = orig }
-  return testy(orig, canTOD(orig) === canon) 
-}
-
-// Helper function for testsuite()
-function testHMS(orig, canon=null) { 
-  if (canon === null) { canon = orig }
-  return testy(orig, canHMS(orig) === canon)
-}
-
-// Run this in the browser's javascript console and look for failed assertions
-function testsuite() {
-  console.log("Assertions! If nothing appears in the console between here --")
-
-  testy("sanity", 1===1)
-  testy("pumpkin tea", genTOD(teatime(pumpkin(parseTOD("9")))) === "9am")
-
-  testTOD("3pm")
-  testTOD("3:12pm")
-  testTOD("312pm", "3:12pm")
-  testTOD("03pm", "3pm")
-  testTOD("003pm", "3am") // not worrying about this cuz who would do that?
-  testTOD("03:12pm", "3:12pm")
-  testTOD("0312pm", "3:12pm")
-  testTOD("01:59am", "1:59am")
-  testTOD("11:30pm")
-  testTOD("12:01", "12:01pm")
-  testTOD("0am", "12am")
-  testTOD("0", "12am")
-  testTOD("1 pm", "1pm")
-  testTOD("3:10 p.m.", "3:10pm")
-  testTOD("12am-1h", "11pm")
-  testTOD("8PM - 7h30m", "12:30pm")
-  testTOD("pm", "NaN'o'clock")
-  testTOD("1259am", "12:59am")
-  testTOD("12:3am", "12:03am")
-  testTOD("12:3pm", "12:03pm")
-  testTOD("1:3pm", "1:03pm")
-  testTOD("1:03pm")
-  testTOD("8 p.m.", "8pm")
-
-  testHMS("0", "0s")
-  testHMS("2h30m")
-  testHMS("8.5h", "8h30m")
-  testHMS("60s", "1m")
-  testHMS("86400s", "24h")
-  testHMS("11:39 - :45*8", "5h39m")
-  testHMS("11:39 - :48*8", "5h15m")
-  testHMS("4.5*1 + 45m*0", "4h30m")
-
-  console.log("-- and here then we're good.")
-  return null
-}
-//testsuite() // uncomment when testing and look in the browser console!
+/******************************************************************************
+ *                                  FUNCTIONS                                 *
+ ******************************************************************************/
 
 // Return the time-of-day right now, as a number of seconds after midnight
 function now() {
@@ -109,18 +59,18 @@ function now() {
 // Seconds remaining until the given time of day (default midnight) specified as
 // a number of seconds after midnight. Pumpkin as in how long till you turn in
 // to one, or "amount of time till the thing happens" or "t minus...".
-// Also known as the pumpkin delta or time till d-day.
-// Adding a day and mod'ing by a day is the same as adding a day if the time to
-// the deadline is negative, eg, amt of time from 3pm to 2pm is -1+24=23 hours.
+// Also known as the pumpkin delta or time till d-day. Always a positive number
+// because if you ask, eg, for the pumpkin delta for 2pm when it's already 3pm,
+// the answer is 23 hours.
+// Implementation note: we get that by adding a day and mod'ing by a day which
+// is the same as adding a day if the pumpkin delta is negative. Eg, 3pm to 2pm
+// is -1+24 = 23 hours.
 function pumpkin(deadline=0) { return (deadline - now() + SID) % SID }
 
 // The inverse of pumpkin(). Return the time of day (expressed as seconds after
 // midnight) that's delta seconds in the future. Teatime is like t-time which is
 // like d-day, as in "the time the thing will happen".
 function teatime(delta) { return (now() + delta) % SID }
-
-// Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
-function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
 
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
@@ -147,8 +97,35 @@ function parseHMS(s) {
   return x===null ? NaN : 3600*x
 }
 
+// Parse a time-of-day string, return seconds after midnight.
+// Also accepts arithmetical expressions like 2pm + 1h
+// WARNING: It does that with an eval so this is for clientside code only.
+// Since the output is number of seconds after midnight, we convert a time like
+// "13:57" to "13h57m" and then do parseHMS of that.
+function parseTOD(s) {
+  // deal w/ spaces, dots, convert "AM"/"PM" to "A"/"P", convert military style
+  s = s.replace(/\s/g, '')   // nix whitespace eg "1 PM" -> "1PM"
+  s = s.replace(/([ap])\.m\.?/gi, '$1m')    // eg A.M. -> AM
+  s = s.replace(/([ap])m/gi, '$1')          // ie AM -> A & PM -> P
+  s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')  // eg 0600 -> 06:00 (military style)
+  // next 3 lines: special case for 12something am -> something minutes
+  s = s.replace(/\b12am?/gi, '0')           // eg 12A -> 0
+  s = s.replace(/\b12:(\d\d?)am?/gi, '$1m') // eg 12:30A -> 30m
+  s = s.replace(/\b12(\d\d)am?/gi, '$1m')   // eg 1230A -> 30m
+  s = s.replace(/a/gi, '')                  // just strip other "AM"s
+  // next 3 lines: "HH:MM pm"/"HH pm"/"HHMM pm" to "[HH+12]hMMm" eg 1PM -> 13h
+  s = s.replace(/\b(0*[1-9]|1[01]):(\d\d?)p/gi, '($1+12)h$2m') // 1:09P -> 13h9m
+  s = s.replace(/(?:^|[^:\d])(0*[1-9]|1[01])p/gi, '($1+12)h') // eg 1P -> 13h
+  s = s.replace(/\b(0*[1-9]|1[01])(\d\d)p/gi, '($1+12)h$2m') // 1159P -> 23h59m
+  s = s.replace(/([^:])p/gi, '$1') // strip other "PM"s if not preceded by colon
+  return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
+}
+
+// Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
+function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
+
 /* Table of what to output based on all possible h/m/s values:
-h m s ? output (the "?" column is syes, whether we care about seconds)
+h m s ? output (the "?" column is SYES, whether we care about seconds)
 - - - - ------
 0 0 0 0     0s
 0 0 0 1     0s
@@ -166,14 +143,17 @@ h m s ? output (the "?" column is syes, whether we care about seconds)
 1 1 0 1 1h1m
 1 1 1 0 1h1m
 1 1 1 1 1h1m1s
-Thanks to Mathematica for turning that into this: h===0 && m===0 || s>0 && syes
+Thanks to Mathematica for turning that into: h===0 && m===0 || s>0 && syes
+(Which, yes, in hindsight should've been obvious.)
 */
 
 // Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> "1h"
+// Note that by default this drops seconds. So 65 seconds would be formated as
+// just "1m" and even 119s -> "1m" even though that's 1 second shy of 2 minutes.
 function genHMS(t, syes=false) { // syes is whether we care about seconds
   if (!isnum(t)) { return '??s' }
   if (t<0) { return '-' + genHMS(-t, syes) }
-  t = Math.round(t)
+  t = Math.floor(t) // drop fractions of seconds
   var x = ""
   var h = Math.floor(t/3600)
   t %= 3600
@@ -185,38 +165,9 @@ function genHMS(t, syes=false) { // syes is whether we care about seconds
   return x
 }
 
-// Parse a time-of-day string, return seconds after midnight.
-// Also accepts arithmetical expressions like 2pm + 1h
-// WARNING: It does that with an eval so this is for clientside code only.
-// Since the output is number of seconds after midnight, we convert a time like
-// "13:57" to "13h57m" and then do parseHMS of that.
-function parseTOD(s=null) {
-  if (s===null) {
-    var d = new Date()
-    return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds()
-  }
-  // deal w/ spaces, dots, convert "AM"/"PM" to "A"/"P", convert military style
-  s = s.replace(/\s/g, '')   // nix whitespace eg "1 PM" -> "1PM"
-  s = s.replace(/([ap])\.m\.?/gi, '$1m')    // eg A.M. -> AM
-  s = s.replace(/([ap])m/gi, '$1')          // ie AM -> A & PM -> P
-  s = s.replace(/^(\d\d)(\d\d)$/, '$1:$2')  // eg 0600 -> 06:00 (military style)
-  // next 3 lines: special case for 12something am -> something minutes
-  s = s.replace(/\b12am?/gi, '0')           // eg 12A -> 0
-  s = s.replace(/\b12:(\d\d?)am?/gi, '$1m') // eg 12:30A -> 30m
-  s = s.replace(/\b12(\d\d)am?/gi, '$1m')   // eg 1230A -> 30m
-  s = s.replace(/a/gi, '')                  // just strip other "AM"s
-  // next 3 lines: "HH:MM pm"/"HH pm"/"HHMM pm" to "[HH+12]hMMm" eg 1PM -> 13h
-  s = s.replace(/\b(0?[1-9]|1[01]):(\d\d?)p/gi, '($1+12)h$2m') // 1:09P -> 13h9m
-  s = s.replace(/(?:^|[^:\d])(0?[1-9]|1[01])p/gi, '($1+12)h') // eg 1P -> 13h
-  s = s.replace(/\b(0?[1-9]|1[01])(\d\d)p/gi, '($1+12)h$2m') // 1159P -> 23h59m
-  s = s.replace(/p/gi, '')                   // strip other "PM"s
-  return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
-}
-
-// Take a number of seconds after midnight, return a time-of-day string like 
-// "3pm". Default to now. And syes false means round to the nearest minute.
-function genTOD(t=null, ampm=true, syes=false) {
-  if (t===null) { t = now() }
+// Take a number of seconds after midnight, return a time-of-day string like
+// "3pm". And syes false means ignore seconds.
+function genTOD(t, ampm=true, syes=false) {
   if (!isnum(t)) { return "NaN'o'clock" }
   if (t < 0 || t >= SID) { return '??:??' }
   
@@ -224,10 +175,10 @@ function genTOD(t=null, ampm=true, syes=false) {
   if (syes) {
     h = Math.floor(t/3600)
     m = Math.floor(t%3600/60)
-    s = Math.round(t%60)
+    s = Math.floor(t%60)
   } else {
     h = Math.floor(t/3600)
-    m = Math.round(t%3600/60)
+    m = Math.floor(t%3600/60)
     s = 0
   }
   if (s>59) { s -= 60; m += 1 }
@@ -247,9 +198,120 @@ function genTOD(t=null, ampm=true, syes=false) {
   return out
 }
 
+/******************************************************************************
+ *                                 TEST SUITE                                 *
+ ******************************************************************************/
 
-/*******************************************************************************
-FUNCTIONS WE'RE NOT CURRENTLY USING:
+const assert = console.assert // args are test and message string
+
+// Canonicalize an amount of time / time of day by parsing it & regenerating it.
+// Maybe useful in general but mainly just convenience functions for testsuite()
+function canHMS(s) { return genHMS(parseHMS(s)) }
+function canTOD(s) { return genTOD(parseTOD(s)) }
+
+// Helper for testTOD() and testHMS(): assert orig canonicalizes to target
+function testy(canonicalizer, orig, target=orig) { 
+  var c = canonicalizer(orig)
+  assert(c === target, `"${orig}" canonicalizes to "${c}" not "${target}"!`)
+}
+
+// Assert orig canonicalizes to target (or to itself if target not specified)
+function testHMS(orig, target=orig) { testy(canHMS, orig, target) }
+function testTOD(orig, target=orig) { testy(canTOD, orig, target) }
+
+// Run this in the browser's javascript console and look for failed assertions
+function testsuite() {
+  assert(1===1, "sanity")
+  assert(genTOD(teatime(pumpkin(parseTOD("9")))) === "9am", "pumpkin tea")
+  assert(genHMS(119) === "1m", "2m-ish")
+  assert(genTOD(0) === "12am", "midnight")
+  assert(genTOD(86400/2+60) === "12:01pm", "86400/2+60")
+
+  testTOD("12am"); testTOD("12:30am")
+  testTOD("0am", "12am")
+  testTOD("0", "12am")
+  testTOD("1am"); testTOD("1:01am")
+  testTOD("2am"); testTOD("2:20am")
+  testTOD("3am"); testTOD("3:59am")
+  testTOD("4am"); testTOD("4:30am")
+  testTOD("5am"); testTOD("5:18am")
+  testTOD("9am"); testTOD("9:48am")
+  testTOD("10am"); testTOD("10:00am", "10am")
+  testTOD("11am"); testTOD("11:03am")
+  testTOD("12pm"); testTOD("12:19pm")
+  testTOD("3pm"); testTOD("3:12pm")
+  testTOD("7pm"); testTOD("7:28pm")
+  testTOD("9pm"); testTOD("9:02pm")
+  testTOD("10pm"); testTOD("10:50pm")
+  testTOD("11pm"); testTOD("11:30pm")
+  testTOD("312pm", "3:12pm")
+  testTOD("03pm", "3pm")
+  testTOD("03:12pm", "3:12pm")
+  testTOD("0312pm", "3:12pm")
+  testTOD("003pm", "3pm")
+  testTOD("11:pm", "NaN'o'clock")
+  testTOD("01:59am", "1:59am")
+  testTOD("12:01", "12:01pm")
+  testTOD("1 pm", "1pm")
+  testTOD("3:10 p.m.", "3:10pm")
+  testTOD("12am-1h", "11pm")
+  testTOD("8PM - 7h30m", "12:30pm")
+  testTOD("pm", "NaN'o'clock")
+  testTOD("1259am", "12:59am")
+  testTOD("12:3am", "12:03am")
+  testTOD("12:3pm", "12:03pm")
+  testTOD("1:3pm", "1:03pm")
+  testTOD("8 p.m.", "8pm")
+  testTOD("13:01", "1:01pm")
+  testTOD("17", "5pm")
+  testTOD("20:00", "8pm")
+  testTOD("23:59", "11:59pm")
+  testTOD("13:01:02", "1:01pm")
+  testTOD("13:01:59", "1:01pm")
+  testTOD("12 a", "12am")
+  testTOD("-1pm", "1pm") // probably too forgiving there and should fail
+  testTOD("", "NaN'o'clock")
+  testTOD("abc", "NaN'o'clock")
+  testTOD("3pm pm", "3pm")
+  testTOD("3pm 4pm", "7pm")
+  testTOD("11pm 11pm", "10am")
+  testTOD("3a m + 1m", "3:01am")
+
+  testHMS("1s")
+  testHMS("1m")
+  testHMS("60s", "1m")
+  testHMS("2h")
+  testHMS("3600s", "1h")
+  testHMS("3601s", "1h")
+  testHMS("24h")
+  testHMS("1d", "24h")
+  testHMS("1w", "??s")
+  testHMS("0", "0s")
+  testHMS("22", "22h")
+  testHMS("2h30m")
+  testHMS("8.5h", "8h30m")
+  testHMS("60s", "1m")
+  testHMS("86400s", "24h")
+  testHMS("11:39 - :45*8", "5h39m")
+  testHMS("11:39 - :48*8", "5h15m")
+  testHMS("4.5*1 + 45m*0", "4h30m")
+  testHMS(".5 h", "30m")
+  testHMS("0:45*3", "2h15m")
+  testHMS(":45*4", "3h")
+  testHMS(":25*-1", "-25m")
+  testHMS("2+2", "4h")
+  testHMS("1h59m59s", "1h59m")
+  testHMS("86460s", "24h1m")
+  testHMS("abc", "??s")
+}
+//testsuite() // uncomment when testing and look in the browser console!
+
+
+/******************************************************************************
+ *                    FUNCTIONS WE'RE NOT CURRENTLY USING                     *
+ ******************************************************************************/
+
+/*
 
 // Helper functions for parseTOD_safe
 function el(x, l) { return l.some(i => i===x) } // Whether x element of list l
@@ -341,4 +403,4 @@ function TODfromUnixtime(t) {
   return (t - offset*60) % 86400
 }
 
-*******************************************************************************/
+*/
