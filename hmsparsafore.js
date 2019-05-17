@@ -36,17 +36,22 @@
 //   genHMS(60) -> "1m"
 //   genHMS(3600) -> "1h"
 //   genHMS(86400+1) -> "24h" (by default, suppress seconds for times >= 60s)
-//   genHMS(86460) -> "24h1m"
+//   genHMS(86400+60) -> "24h1m"
 
 /******************************************************************************
  *                                  CONSTANTS                                 *
  ******************************************************************************/
 
-const SID = 86400 // handy constant for seconds in a day
+const SID = 86400 // seconds in a day
+const TINYSP = String.fromCharCode(8198) // space that's 1/6 of an em wide
 
 /******************************************************************************
  *                                  FUNCTIONS                                 *
  ******************************************************************************/
+
+function dbg(...s) {
+  if (true) { console.log(...s) }
+}
 
 // Return the time-of-day right now, as a number of seconds after midnight
 function now() {
@@ -79,6 +84,9 @@ function laxeval(s) {
   } catch(e) { return null } 
 }
 
+// Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
+function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
+
 // Turn a string like "2h30m" or "2:30" into a number of seconds.
 // Also accepts arithmetical expressions like :45*2 (= 1.5h).
 // WARNING: It does that with an eval so this is for clientside code only.
@@ -101,6 +109,12 @@ function parseHMS(s) {
 // Since the output is number of seconds after midnight, we convert a time like
 // "13:57" to "13h57m" and then do parseHMS of that.
 function parseTOD(s) {
+  if (isnum(s)) {
+    if (s < 0 || s > 24) { return NaN } // mayyybe "25" could mean 1am but c'mon
+    return s*3600 % 86400 // eg "1" parses as 1am and "14" as 2pm
+  }
+  // if not a raw number it has to have some hint of being a time of day
+  if (!/([:ap])/i.test(s)) { return NaN } // eg don't try to parse "45m"
   // deal w/ spaces, dots, convert "AM"/"PM" to "A"/"P", convert military style
   s = s.replace(/\s/g, '')   // nix whitespace eg "1 PM" -> "1PM"
   s = s.replace(/([ap])\.m\.?/gi, '$1m')    // eg A.M. -> AM
@@ -119,10 +133,7 @@ function parseTOD(s) {
   return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }
 
-// Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
-function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
-
-/* Table of what to output based on all possible h/m/s values:
+/* For genHMS: table of what to output based on all possible h/m/s values:
 h m s ? output (the "?" column is SYES, whether we care about seconds)
 - - - - ------
 0 0 0 0     0s
@@ -145,22 +156,29 @@ Thanks to Mathematica for turning that into: h===0 && m===0 || s>0 && syes
 (Which, yes, in hindsight should've been obvious.)
 */
 
-// Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> "1h"
-// Note that by default this drops seconds. So 65 seconds would be formated as
-// just "1m" and even 119s -> "1m" even though that's 1 second shy of 2 minutes.
-function genHMS(t, syes=false) { // syes is whether we care about seconds
+// Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> "1h".
+// By default this drops seconds if the amount of time is more than a minute. 
+// So 65 seconds would be formated as just "1m" and even 119s -> "1m" even
+// though that's 1 second shy of 2 minutes.
+function genHMS(t, gran=60) { // granularity: drop number of secs less than that
   if (!isnum(t)) { return 'NaNs' }
-  if (t<0) { return '-' + genHMS(-t, syes) }
-  t = Math.floor(t) // drop fractions of seconds
-  var x = ""
+  if (t<0) { return '-' + genHMS(-t, gran) }
+  t = t < gran ? t : Math.floor(t/gran)*gran
+  var a = [] // array of stringy bits like ["1d", "2h", "3m", "4s"]
+  var d = 0
+  if (t >= 2*86400) {
+    d = Math.floor(t/86400)
+    t %= 86400
+  }
   var h = Math.floor(t/3600)
   t %= 3600
   var m = Math.floor(t/60)
   t %= 60
-  if (h>0)                           { x += h+'h' }
-  if (m>0 || h>0 && t>0 && syes)     { x += m+'m' }
-  if (h===0 && m===0 || t>0 && syes) { x += t+'s' }
-  return x
+  if (d>0)                            { a.push(d+'d') }
+  if (h>0)                            { a.push(h+'h') }
+  if (m>0 || h>0 && t>0)              { a.push(m+'m') }
+  if (d===0 && h===0 && m===0 || t>0) { a.push(t+'s') }
+  return a.join(TINYSP) // space that's 1/6 of an em wide
 }
 
 // Take a number of seconds after midnight, return a time-of-day string like
@@ -169,16 +187,9 @@ function genTOD(t, ampm=true, syes=false) {
   if (!isnum(t)) { return "NaN'o'clock" }
   if (t < 0 || t >= SID) { return '??:??' }
   
-  var h, m, s
-  if (syes) {
-    h = Math.floor(t/3600)
-    m = Math.floor(t%3600/60)
-    s = Math.floor(t%60)
-  } else {
-    h = Math.floor(t/3600)
-    m = Math.floor(t%3600/60)
-    s = 0
-  }
+  var h = Math.floor(t/3600)
+  var m = Math.floor(t%3600/60)
+  var s = syes ? Math.floor(t%60) : 0
   if (s>59) { s -= 60; m += 1 }
   if (m>59) { m -= 60; h += 1 }
 
@@ -200,7 +211,17 @@ function genTOD(t, ampm=true, syes=false) {
  *                                 TEST SUITE                                 *
  ******************************************************************************/
 
-const assert = console.assert // args are test and message string
+let ntest = 0 // count how many tests we do
+let npass = 0 // count how many pass
+
+// Takes a boolean assertion and a message string, prints a warning to the 
+// browser console if the assertion is false. Also increment the test counter.
+// (But mainly I wanted to just type "assert" instead of "console.assert")
+function assert(test, msg) {
+  ntest += 1
+  npass += test
+  console.assert(test, msg)
+}
 
 // Canonicalize an amount of time / time of day by parsing it & regenerating it.
 // Maybe useful in general but mainly just convenience functions for testsuite()
@@ -210,15 +231,19 @@ function canTOD(s) { return genTOD(parseTOD(s)) }
 // Helper for testTOD() and testHMS(): assert orig canonicalizes to target
 function testy(canonicalizer, orig, target=orig) { 
   var c = canonicalizer(orig)
-  assert(c === target, `"${orig}" canonicalizes to "${c}" not "${target}"!`)
+  assert(c === target, 
+         `"${orig}" expected canonicalization "${target}" but got "${c}"!`)
 }
 
 // Assert orig canonicalizes to target (or to itself if target not specified)
 function testHMS(orig, target=orig) { testy(canHMS, orig, target) }
 function testTOD(orig, target=orig) { testy(canTOD, orig, target) }
 
-// Run this in the browser's javascript console and look for failed assertions
+// Run this in the browser's javascript console and look for failed assertions.
+// Returns the number of tests (assertions) it performed and how many passed.
 function testsuite() {
+  ntest = npass = 0
+
   assert(1===1, "sanity")
   assert(genTOD(teatime(pumpkin(parseTOD("9")))) === "9am", "pumpkin tea")
   assert(genHMS(119) === "1m", "2m-ish")
@@ -253,6 +278,7 @@ function testsuite() {
   testTOD("1 pm", "1pm")
   testTOD("3:10 p.m.", "3:10pm")
   testTOD("12am-1h", "11pm")
+  testTOD("2pm - 1h", "1pm")
   testTOD("8PM - 7h30m", "12:30pm")
   testTOD("8pm - 7h + 30m", "1:30pm")
   testTOD("pm", "NaN'o'clock")
@@ -268,21 +294,30 @@ function testsuite() {
   testTOD("13:01:02", "1:01pm")
   testTOD("13:01:59", "1:01pm")
   testTOD("12 a", "12am")
-  testTOD("-1pm", "1pm") // probably too forgiving there and should fail
   testTOD("", "NaN'o'clock")
   testTOD("abc", "NaN'o'clock")
+  testTOD("6 - 2h", "NaN'o'clock")
   testTOD("3pm pm", "3pm")
   testTOD("3pm 4pm", "7pm")
   testTOD("11pm 11pm", "10am")
   testTOD("3a m + 1m", "3:01am")
   testTOD("4am + 59s + 1s", "4:01am")
   testTOD("3am + 3m * 4", "3:12am")
+  testTOD("-1pm", "1pm") // probably too forgiving there and should fail
+  testTOD("20m", "NaN'o'clock")
+  testTOD("45m * 3", "NaN'o'clock")
+  testTOD("3am -", "NaN'o'clock")
+  testTOD("0:45 + 15m", "1am")
+  testTOD("0:45 * 3", "2:15am")
+  testTOD("0:45 + 15m * 3", "1:30am")
 
   testHMS("1s")
   testHMS("1m")
   testHMS("60s", "1m")
   testHMS("60s / 2", "30s")
   testHMS("2h")
+  testHMS("+3h2m59s", `3h${TINYSP}2m`)
+  testHMS("-11h")
   testHMS("3600s", "1h")
   testHMS("3601s", "1h")
   testHMS("24h")
@@ -290,23 +325,27 @@ function testsuite() {
   testHMS("1w", "NaNs")
   testHMS("0", "0s")
   testHMS("22", "22h")
-  testHMS("2h30m")
-  testHMS("8.5h", "8h30m")
+  testHMS("2h30m", `2h${TINYSP}30m`)
+  testHMS("8.5h", `8h${TINYSP}30m`)
   testHMS("60s", "1m")
   testHMS("86400s", "24h")
-  testHMS("11:39 - :45*8", "5h39m")
-  testHMS("11:39 - :48*8", "5h15m")
-  testHMS("4.5*1 + 45m*0", "4h30m")
+  testHMS("11:39 - :45*8", `5h${TINYSP}39m`)
+  testHMS("11:39 - :48*8", `5h${TINYSP}15m`)
+  testHMS("4.5*1 + 45m*0", `4h${TINYSP}30m`)
+  testHMS("5.25 *0+1* 45m*7", `5h${TINYSP}15m`)
   testHMS(".5 h", "30m")
-  testHMS("0:45*3", "2h15m")
+  testHMS("0:45*3", `2h${TINYSP}15m`)
   testHMS(":45*4", "3h")
   testHMS(":25*-1", "-25m")
   testHMS("2+2", "4h")
-  testHMS("1h59m59s", "1h59m")
-  testHMS("86460s", "24h1m")
+  testHMS("1h59m59s", `1h${TINYSP}59m`)
+  testHMS("86460s", `24h${TINYSP}1m`)
   testHMS("abc", "NaNs")
+  testHMS("2d")
+  
+  return npass + "/" + ntest + " tests passed"
 }
-//testsuite() // uncomment when testing and look in the browser console!
+testsuite() // uncomment when testing and look in the browser console!
 
 
 /******************************************************************************

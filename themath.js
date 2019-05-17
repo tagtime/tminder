@@ -96,7 +96,6 @@ function GammaCDF0(x, a) {
 // CDF(x) of a gamma distribution with parameters alpha (A) and beta (B)
 function GammaCDF(x, A, B) { return GammaCDF0(x/B, A) }
 
-// NOT CURRENTLY USED but seems to work fine:
 // Inverse of above: what x makes GammaCDF(x, A, B) == p
 // For TagTime: hours to set aside so Pr(success) == p is ig(p, pings, gap)
 function ig(p, A, B, min=0, max=8) {
