@@ -140,7 +140,7 @@ class Tminder extends React.Component {
   render() { return ( <div>
     <div className="control-group">
       <label className="control-label" for="heep">
-        Hours needed (eg, 2h15m or 0:45*3 for 3 pings):
+        Hours needed (eg, {genHMS(2*3600+15*60)} or 0:45*3 for 3 pings):
       </label>
       <div className="controls">
         <input className="form-control" type="text" autofocus
@@ -150,7 +150,7 @@ class Tminder extends React.Component {
       </div>
       
       <label className="control-label" for="dead">
-        Deadline (eg, 9pm or 12:30 or +1h5m or 2p-1h):
+        Deadline (eg, 9pm or 12:30 or +{genHMS(1*3600+5*60)} or 2p-1h):
       </label>
       <div className="controls">
         <input className="form-control" type="text"
