@@ -49,13 +49,9 @@ const TINYSP = String.fromCharCode(8198) // space that's 1/6 of an em wide
  *                                  FUNCTIONS                                 *
  ******************************************************************************/
 
-function dbg(...s) {
-  if (true) { console.log(...s) }
-}
-
 // Return the time-of-day right now, as a number of seconds after midnight
 function now() {
-  var d = new Date()
+  var d = new Date()   // if we just needed unixtime, Date.now() would be better
   return 3600*d.getHours() + 60*d.getMinutes() + d.getSeconds()
 }
 
@@ -78,30 +74,61 @@ function teatime(delta) { return (now() + delta) % SID }
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
 function laxeval(s) {
-  try { 
-    var x = eval(s)
+  try {
+    const x = eval(s)
     return typeof x === 'undefined' ? null : x
-  } catch(e) { return null } 
+  } catch(e) { return null }
 }
 
 // Convenience function. What Jquery's isNumeric does, I guess. Javascript wat?
 function isnum(x) { return x - parseFloat(x) + 1 >= 0 }
 
-// Turn a string like "2h30m" or "2:30" into a number of seconds.
-// Also accepts arithmetical expressions like :45*2 (= 1.5h).
+// Turn a string like "2h30m" or "2:30" into a number of seconds. Bare numbers
+// are assumed to be hours so, e.g., "1" parses as 3600. Also accepts 
+// arithmetical expressions like :45*2 (= 1.5h).
 // WARNING: It does that with an eval so this is for clientside code only.
 function parseHMS(s) {
-  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, '($1+$2/60+$3/3600)') // "H:M:S"
-  s = s.replace(/(\d*)\:(\d+)/g,        '($1+$2/60)') // "H:M" -> "(H+M/60)"
-  s = s.replace(/:/, '') // get rid of further colons; i forget why
-  s = s.replace(/\s/g, '') // nix whitespace eg "4h 5m" -> "4h5m"
-  s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)') // put parens around eg "4h5m"
-  s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2') // eg "1h" -> "1*h"
-  s = s.replace(/([dhms])\s*([\d\.\(])/g, '$1+$2') // eg "3h2m" -> "3h+2m"
+  // First ensure s isn't totally non-numeric, otherwise eg "h" would parse as
+  // an hour, which is weird. You should have to say "1h" if you mean 1 hour.
+  if (!/\d/.test(s)) return NaN
+  // Next, turn strings like "H:M:S" into "(H+M/60+S/3600)" + similar transforms
+  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, '($1+$2/60+$3/3600)')
+  s = s.replace(/(\d*)\:(\d+)/g,        '($1+$2/60)')     // "H:M" -> "(H+M/60)"
+  //s = s.replace(/:/, '')   // get rid of further colons; probably unnecessary?
+  s = s.replace(/\s/g, '')                // nix whitespace eg "4h 5m" -> "4h5m"
+  s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)')  // put parens around eg "4h5m"
+  s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2')       // eg "1h" -> "1*h"
+  s = s.replace(/([dhms])\s*([\d\.\(])/g, '$1+$2')       // eg "3h2m" -> "3h+2m"
+  // finally, replace instances of "d" w/ "24 ", "h" w/ "1 ", "m" w/ "1/60 " etc
   s = s.replace(/[dhms]/g, m=>({d:'24 ', h:'1 ', m:'1/60 ', s:'1/3600 '}[m]))
-  var x = laxeval(s)
-  return x===null ? NaN : 3600*x
+  const x = laxeval(s)              // eval it to get a number of hours
+  return x===null ? NaN : 3600*x    // convert to seconds (or NaN if unparsable)
 }
+
+// NON-DRY: Version of above for Beeminder that converts to hours not seconds
+// ---------------------------------------------------------------------------->
+// Turn a string like "2h30m" or "2:30" into a number of hours. Bare numbers are
+// assumed to be hours so, e.g., "1" parses as 1. Also accepts arithmetical 
+// expressions like :45*2 (= 1.5h).
+// WARNING: It does that with an eval so this is for clientside code only.
+function parsafore(s) {
+  // First ensure s isn't totally non-numeric, otherwise eg "h" would parse as
+  // an hour, which is weird. You should have to say "1h" if you mean 1 hour.
+  if (!/\d/.test(s)) return NaN
+  // Next, turn strings like "H:M:S" into "(H+M/60+S/3600)" + similar transforms
+  s = s.replace(/(\d*)\:(\d+)\:(\d+)/g, '($1+$2/60+$3/3600)')
+  s = s.replace(/(\d*)\:(\d+)/g,        '($1+$2/60)')     // "H:M" -> "(H+M/60)"
+  //s = s.replace(/:/, '')   // get rid of further colons; probably unnecessary?
+  s = s.replace(/\s/g, '')                // nix whitespace eg "4h 5m" -> "4h5m"
+  s = s.replace(/((?:[\d\.]+[dhms])+)/g, '($1)')  // put parens around eg "4h5m"
+  s = s.replace(/([\d\.\)])\s*([dhms])/g, '$1*$2')       // eg "1h" -> "1*h"
+  s = s.replace(/([dhms])\s*([\d\.\(])/g, '$1+$2')       // eg "3h2m" -> "3h+2m"
+  // finally, replace instances of "d" w/ "24 ", "h" w/ "1 ", "m" w/ "1/60 " etc
+  s = s.replace(/[dhms]/g, m=>({d:'24 ', h:'1 ', m:'1/60 ', s:'1/3600 '}[m]))
+  const hours = laxeval(s)           // eval it to get a number of hours
+  return hours===null ? NaN : hours  // return that or NaN if unparsable
+}
+// ---------------------------------------------------------------------------->
 
 // Parse a time-of-day string, return seconds after midnight.
 // Also accepts arithmetical expressions like 2pm + 1h
@@ -132,29 +159,6 @@ function parseTOD(s) {
   s = s.replace(/([^:])p/gi, '$1') // strip other "PM"s if not preceded by colon
   return (parseHMS(s)+SID) % SID  // eg "12am-1m" = -60 which is really 86400-60
 }
-
-/* For genHMS: table of what to output based on all possible h/m/s values:
-h m s ? output (the "?" column is SYES, whether we care about seconds)
-- - - - ------
-0 0 0 0     0s
-0 0 0 1     0s
-0 0 1 0     1s
-0 0 1 1     1s 
-0 1 0 0   1m
-0 1 0 1   1m
-0 1 1 0   1m
-0 1 1 1   1m1s
-1 0 0 0 1h
-1 0 0 1 1h
-1 0 1 0 1h
-1 0 1 1 1h0m1s
-1 1 0 0 1h1m
-1 1 0 1 1h1m
-1 1 1 0 1h1m
-1 1 1 1 1h1m1s
-Thanks to Mathematica for turning that into: h===0 && m===0 || s>0 && syes
-(Which, yes, in hindsight should've been obvious.)
-*/
 
 // Convert seconds to hours/minutes/seconds, like 65 -> "1m5s" or 3600 -> "1h".
 // By default this drops seconds if the amount of time is more than a minute. 
@@ -342,10 +346,13 @@ function testsuite() {
   testHMS("86460s", `24h${TINYSP}1m`)
   testHMS("abc", "NaNs")
   testHMS("2d")
+  testHMS("h", "NaNs")
+  testHMS("m", "NaNs")
+  testHMS("s", "NaNs")
   
   return npass + "/" + ntest + " tests passed"
 }
-testsuite() // uncomment when testing and look in the browser console!
+//testsuite() // uncomment when testing and look in the browser console!
 
 
 /******************************************************************************
@@ -353,6 +360,32 @@ testsuite() // uncomment when testing and look in the browser console!
  ******************************************************************************/
 
 /*
+
+For genHMS: table of what to output based on all possible h/m/s values:
+h m s ? output (the "?" column is SYES, whether we care about seconds)
+- - - - ------
+0 0 0 0     0s
+0 0 0 1     0s
+0 0 1 0     1s
+0 0 1 1     1s 
+0 1 0 0   1m
+0 1 0 1   1m
+0 1 1 0   1m
+0 1 1 1   1m1s
+1 0 0 0 1h
+1 0 0 1 1h
+1 0 1 0 1h
+1 0 1 1 1h0m1s
+1 1 0 0 1h1m
+1 1 0 1 1h1m
+1 1 1 0 1h1m
+1 1 1 1 1h1m1s
+Thanks to Mathematica for turning that into: h===0 && m===0 || s>0 && syes
+(Which, yes, in hindsight should've been obvious.)
+
+function dbg(...s) {
+  if (true) { console.log(...s) }
+}
 
 // Helper functions for parseTOD_safe
 function el(x, l) { return l.some(i => i===x) } // Whether x element of list l
