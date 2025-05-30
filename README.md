@@ -1,8 +1,6 @@
 # TagTime Minder
 
-Canonical URL: mind.tagti.me currently pointing to tminder.glitch.me
-
-But about to switch to GitHub Pages.
+Hosted at <https://mind.tagti.me> via GitHub Pages.
 
 TagTime Minder, or Tminder, is a utility that tells you the probability that 
 you'll get your requisite number of emergency TagTime pings by your Beeminder 
