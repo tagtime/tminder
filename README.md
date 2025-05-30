@@ -77,3 +77,4 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2018.04.09 Bugfix: parse "03pm"
 * 2018.04.14 Tiny improvements to the H.M.S. Parsafore
 * 2019.05.15 Prettier display of things like "1h 30m"
+* 2025.05.29 Change hosting from Glitch to GitHub Pages
