@@ -42,7 +42,10 @@ front page of this app.
 
 ## Technical/Implementation Note
 
-This is hosted on Glitch but it's all strictly client-side javascript.
+This is all client-side Javascript.
+It currently uses React.
+Which makes no sense and it ought to be in vanilla Javascript.
+I just didn't know better when I originally made it.
 
 ## Changelog
 
@@ -76,3 +79,4 @@ This is hosted on Glitch but it's all strictly client-side javascript.
 * 2018.04.14 Tiny improvements to the H.M.S. Parsafore
 * 2019.05.15 Prettier display of things like "1h 30m"
 * 2025.05.29 Change hosting from Glitch to GitHub Pages
+* 2025.06.26 Better html header and other tweaks
