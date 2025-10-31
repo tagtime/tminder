@@ -71,11 +71,30 @@ function pumpkin(deadline=0) { return (deadline - now() + SID) % SID }
 // like d-day, as in "the time the thing will happen".
 function teatime(delta) { return (now() + delta) % SID }
 
+// This is so dumb but Javascript (among other languages) will interpret numbers
+// with a leading zero (and with no digits greater than 7) as octal. Eg, "010"
+// is parsed as 8, not 10. Facepalm. So this function basically strips leading
+// zeros. It does that by turning bare zeros or any zero in the middle or end of
+// a number into a sentinel ('z'), stripping out all other zeros, then turning
+// the sentinels back to zeros. So it's a prereq that the string we're
+// deoctalizing have no z's in it. Typically we do this to arithmetic
+// expressions or amounts of time or times of day so we'll want to rethink this
+// if we ever find that there's no single character we can guarantee won't occur
+// in the input string.
+function deoctalize(s) {
+  if (s.includes('z')) return "ERROR"        // z is our sentinel
+  s = s.replace(/\b0+\b/g, 'z')              // replace bare zeros with sentinel 
+       .replace(/[1-9\.]0+/g, m => m.replace(/0/g, 'z'))  // save these too
+       .replace(/0/g, '')                    // throw away the rest of the zeros
+       .replace(/z/g, '0')                   // turn sentinels back to zeros
+  return s
+}
+
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
 function laxeval(s) {
   try {
-    const x = eval(s)
+    const x = eval(deoctalize(s))
     return typeof x === 'undefined' ? null : x
   } catch(e) { return null }
 }

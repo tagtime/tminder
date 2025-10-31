@@ -80,3 +80,4 @@ I just didn't know better when I originally made it.
 * 2019.05.15 Prettier display of things like "1h 30m"
 * 2025.05.29 Change hosting from Glitch to GitHub Pages
 * 2025.06.26 Better html header and other tweaks
+* 2025.10.31 Fix bug with leading zeros causing numbers to be parsed as octal
