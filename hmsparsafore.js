@@ -89,6 +89,8 @@ function deoctalize(s) {
        .replace(/z/g, '0')                   // turn sentinels back to zeros
   return s
 }
+// As an extra safety net, we could eval with "use strict" which will give an
+// error for octal literals.
 
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
