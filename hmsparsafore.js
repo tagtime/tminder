@@ -81,6 +81,8 @@ function teatime(delta) { return (now() + delta) % SID }
 // expressions or amounts of time or times of day so we'll want to rethink this
 // if we ever find that there's no single character we can guarantee won't occur
 // in the input string.
+// GPT-5 suggests a safer sentinel like const Z = '\uE000' but then we'd also
+// have to do this for the final regex: .replace(new RegExp(Z, 'g'), '0')
 function deoctalize(s) {
   if (s.includes('z')) return "ERROR"        // z is our sentinel
   s = s.replace(/\b0+\b/g, 'z')              // replace bare zeros with sentinel 
@@ -90,7 +92,8 @@ function deoctalize(s) {
   return s
 }
 // As an extra safety net, we could eval with "use strict" which will give an
-// error for octal literals.
+// error for octal literals. GPT-5 suggests this:
+// const strictEval = expr => Function('"use strict"; return (' + expr + ')')()
 
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
