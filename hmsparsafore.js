@@ -100,6 +100,7 @@ function deoctalize(s) {
 
 // Eval but just return null if syntax error. 
 // Obviously don't use serverside with user-supplied input.
+// (See also the supposedly serverside-safe version in Omnibot.)
 function laxeval(s) {
   try {
     const x = eval(deoctalize(s))
